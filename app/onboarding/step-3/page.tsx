@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Controller, useFieldArray, useForm } from "react-hook-form"
+import { useForm } from "react-hook-form"
 
 import { ChevronLeft, Plus, Trash2 } from "lucide-react"
 
@@ -12,17 +12,21 @@ import {
   OnboardingTopBar,
 } from "@/components/onboarding/onboarding-ui"
 import {
+  getBusinessOnboardingDraft,
+  type TeamSetupStepValues,
+  useStoreBusinessOnboardingStep,
+} from "@/services/onboarding/business-onboarding"
+import {
+  useOnboardingTeamMembersStore,
+  type TeamMemberDraft,
+} from "@/stores/onboarding-team-members"
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import {
-  getBusinessOnboardingDraft,
-  type TeamSetupStepValues,
-  useStoreBusinessOnboardingStep,
-} from "@/services/onboarding/business-onboarding"
 
 type OnboardingStepState = "complete" | "current" | "upcoming"
 
@@ -33,14 +37,118 @@ const stepProgress: OnboardingStepState[] = [
   "upcoming",
 ]
 
+function createEmptyTeamMember() {
+  return { fullName: "", email: "", role: "MANAGER" as const }
+}
+
+function TeamMemberRow({
+  member,
+  index,
+  onChange,
+  onRemove,
+  canRemove,
+}: {
+  member: TeamMemberDraft
+  index: number
+  onChange: (updates: Partial<Omit<TeamMemberDraft, "id">>) => void
+  onRemove: () => void
+  canRemove: boolean
+}) {
+  return (
+    <article className="border border-border bg-background p-4">
+      <div className="grid gap-4 md:grid-cols-[1.2fr_1.1fr_0.7fr_auto] md:items-end">
+        <div className="space-y-2">
+          <label
+            className="text-xs font-medium text-muted-foreground"
+            htmlFor={`teamMembers.${index}.fullName`}
+          >
+            Full Name
+          </label>
+          <input
+            className="carbon-input"
+            id={`teamMembers.${index}.fullName`}
+            placeholder="e.g. Ama Boateng"
+            type="text"
+            value={member.fullName}
+            onChange={(event) => onChange({ fullName: event.target.value })}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label
+            className="text-xs font-medium text-muted-foreground"
+            htmlFor={`teamMembers.${index}.email`}
+          >
+            Email
+          </label>
+          <input
+            className="carbon-input"
+            id={`teamMembers.${index}.email`}
+            placeholder="member@company.com"
+            type="email"
+            value={member.email}
+            onChange={(event) => onChange({ email: event.target.value })}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label
+            className="text-xs font-medium text-muted-foreground"
+            htmlFor={`teamMembers.${index}.role`}
+          >
+            Role
+          </label>
+          <Select
+            onValueChange={(value) =>
+              onChange({ role: value === "ADMIN" ? "ADMIN" : "MANAGER" })
+            }
+            value={member.role}
+          >
+            <SelectTrigger className="w-full" id={`teamMembers.${index}.role`}>
+              <SelectValue placeholder="Select role" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ADMIN">ADMIN</SelectItem>
+              <SelectItem value="MANAGER">MANAGER</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex justify-end">
+          <button
+            aria-label={`Remove member ${index + 1}`}
+            className="inline-flex h-11 items-center justify-center border border-border bg-background px-3 text-muted-foreground transition-colors hover:bg-muted hover:text-destructive"
+            type="button"
+            onClick={onRemove}
+            disabled={!canRemove}
+          >
+            <Trash2 className="h-4 w-4" aria-hidden="true" />
+          </button>
+        </div>
+      </div>
+    </article>
+  )
+}
+
 export default function OnboardingStepThreePage() {
   const router = useRouter()
   const storeStep = useStoreBusinessOnboardingStep()
+  const members = useOnboardingTeamMembersStore((state) => state.members)
+  const addMember = useOnboardingTeamMembersStore((state) => state.addMember)
+  const removeMember = useOnboardingTeamMembersStore(
+    (state) => state.removeMember
+  )
+  const updateMember = useOnboardingTeamMembersStore(
+    (state) => state.updateMember
+  )
+  const setMembers = useOnboardingTeamMembersStore((state) => state.setMembers)
+  const resetMembers = useOnboardingTeamMembersStore(
+    (state) => state.resetMembers
+  )
 
   const {
     register,
     handleSubmit,
-    control,
     reset,
     formState: { errors, isSubmitting },
   } = useForm<TeamSetupStepValues>({
@@ -52,29 +160,29 @@ export default function OnboardingStepThreePage() {
     },
   })
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "teamMembers",
-  })
-
   useEffect(() => {
     const onboardingDraft = getBusinessOnboardingDraft()
 
     if (onboardingDraft.teamSetup) {
       reset(onboardingDraft.teamSetup)
-      return
+      setMembers(onboardingDraft.teamSetup.teamMembers)
     }
-
-    if (fields.length === 0) {
-      append({ fullName: "", email: "", role: "MANAGER" })
-    }
-  }, [append, fields.length, reset])
+  }, [reset, setMembers])
 
   const onSubmit = async (values: TeamSetupStepValues) => {
     await storeStep.mutateAsync({
       stepKey: "team-setup",
-      values,
+      values: {
+        ...values,
+        teamMembers: members.map((member) => ({
+          fullName: member.fullName,
+          email: member.email,
+          role: member.role,
+        })),
+      },
     })
+
+    resetMembers()
 
     router.push("/onboarding/step-4")
   }
@@ -206,118 +314,38 @@ export default function OnboardingStepThreePage() {
                         <button
                           className="carbon-button-secondary"
                           type="button"
-                          onClick={() =>
-                            append({ fullName: "", email: "", role: "MANAGER" })
-                          }
+                          onClick={() => addMember(createEmptyTeamMember())}
                         >
                           <Plus className="h-4 w-4" aria-hidden="true" />
-                          Add Member
+                          Add Another Member
                         </button>
                       </div>
 
                       <div className="mt-6 space-y-4">
-                        {fields.map((field, index) => (
-                          <article
-                            key={field.id}
-                            className="border border-border bg-background p-4"
-                          >
-                            <div className="grid gap-4 md:grid-cols-[1.2fr_1.1fr_0.7fr_auto] md:items-end">
-                              <div className="space-y-2">
-                                <label
-                                  className="text-xs font-medium text-muted-foreground"
-                                  htmlFor={`teamMembers.${index}.fullName`}
-                                >
-                                  Full Name
-                                </label>
-                                <input
-                                  className="carbon-input"
-                                  id={`teamMembers.${index}.fullName`}
-                                  placeholder="e.g. Ama Boateng"
-                                  type="text"
-                                  {...register(
-                                    `teamMembers.${index}.fullName`,
-                                    {
-                                      required: "Member name is required",
-                                    }
-                                  )}
-                                />
-                              </div>
-
-                              <div className="space-y-2">
-                                <label
-                                  className="text-xs font-medium text-muted-foreground"
-                                  htmlFor={`teamMembers.${index}.email`}
-                                >
-                                  Email
-                                </label>
-                                <input
-                                  className="carbon-input"
-                                  id={`teamMembers.${index}.email`}
-                                  placeholder="member@company.com"
-                                  type="email"
-                                  {...register(`teamMembers.${index}.email`, {
-                                    required: "Member email is required",
-                                  })}
-                                />
-                              </div>
-
-                              <div className="space-y-2">
-                                <label
-                                  className="text-xs font-medium text-muted-foreground"
-                                  htmlFor={`teamMembers.${index}.role`}
-                                >
-                                  Role
-                                </label>
-                                <Controller
-                                  control={control}
-                                  name={`teamMembers.${index}.role`}
-                                  render={({ field: roleField }) => (
-                                    <Select
-                                      onValueChange={roleField.onChange}
-                                      value={roleField.value}
-                                    >
-                                      <SelectTrigger
-                                        className="w-full"
-                                        id={`teamMembers.${index}.role`}
-                                      >
-                                        <SelectValue placeholder="Select role" />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="ADMIN">
-                                          ADMIN
-                                        </SelectItem>
-                                        <SelectItem value="MANAGER">
-                                          MANAGER
-                                        </SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                  )}
-                                />
-                              </div>
-
-                              <div className="flex justify-end">
-                                <button
-                                  aria-label={`Remove member ${index + 1}`}
-                                  className="inline-flex h-11 items-center justify-center border border-border bg-background px-3 text-muted-foreground transition-colors hover:bg-muted hover:text-destructive"
-                                  type="button"
-                                  onClick={() => remove(index)}
-                                  disabled={fields.length === 1}
-                                >
-                                  <Trash2
-                                    className="h-4 w-4"
-                                    aria-hidden="true"
-                                  />
-                                </button>
-                              </div>
-                            </div>
-                          </article>
-                        ))}
+                        {members.length > 0 ? (
+                          members.map((member, index) => (
+                            <TeamMemberRow
+                              key={member.id}
+                              member={member}
+                              index={index}
+                              onChange={(updates) =>
+                                updateMember(member.id, updates)
+                              }
+                              onRemove={() => removeMember(member.id)}
+                              canRemove={members.length > 0}
+                            />
+                          ))
+                        ) : (
+                          <div className="border border-dashed border-border bg-background p-4 text-sm text-muted-foreground">
+                            No additional team members have been added yet.
+                          </div>
+                        )}
                       </div>
 
                       <p className="mt-4 text-xs leading-5 text-muted-foreground">
-                        Only ADMIN and MANAGER roles are allowed during
-                        onboarding. Members are captured now and can be
-                        activated after launch.
+                        You can add as many ADMIN and MANAGER members as you
+                        need during onboarding. Members are captured now and can
+                        be activated after launch.
                       </p>
                     </section>
                   </div>
@@ -367,7 +395,7 @@ export default function OnboardingStepThreePage() {
                   <li>Only ADMIN and MANAGER roles are available.</li>
                   <li>Email and name are required for every team member.</li>
                   <li>
-                    At least one team member can be staged besides the admin.
+                    Add more members by using the Add Another Member button.
                   </li>
                 </ul>
               </div>

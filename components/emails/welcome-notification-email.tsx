@@ -2,6 +2,17 @@ type WelcomeNotificationEmailProps = {
   appName: string
   appUrl: string
   recipientName?: string
+  eyebrow?: string
+  title?: string
+  lead?: string
+  ctaLabel?: string
+  ctaUrl?: string
+  password?: string
+  securityNote?: string
+  steps?: {
+    title: string
+    description: string
+  }[]
 }
 
 const emailColors = {
@@ -47,8 +58,25 @@ export function WelcomeNotificationEmail({
   appName,
   appUrl,
   recipientName,
+  eyebrow,
+  title,
+  lead,
+  ctaLabel,
+  ctaUrl,
+  password,
+  securityNote,
+  steps,
 }: WelcomeNotificationEmailProps) {
   const onboardingUrl = `${appUrl.replace(/\/$/, "")}/onboarding`
+  const actionUrl = ctaUrl?.trim() || onboardingUrl
+  const actionLabel = ctaLabel?.trim() || "Complete onboarding"
+  const emailSteps = steps?.length ? steps : onboardingSteps
+  const emailEyebrow = eyebrow?.trim() || "Welcome aboard"
+  const emailTitle = title?.trim() || `Welcome to ${appName}`
+  const emailLead =
+    lead?.trim() ||
+    `${recipientName ? `Hi ${recipientName}, ` : ""}your account is ready. The dashboard and onboarding flow are prepared so you can start using the platform right away.`
+  const securePassword = password?.trim()
 
   return (
     <div
@@ -99,11 +127,11 @@ export function WelcomeNotificationEmail({
               textTransform: "uppercase",
             }}
           >
-            Welcome aboard
+            {emailEyebrow}
           </div>
 
           <h1 style={{ fontSize: 32, lineHeight: 1.1, margin: "0 0 16px" }}>
-            Welcome to {appName}
+            {emailTitle}
           </h1>
 
           <p
@@ -113,13 +141,52 @@ export function WelcomeNotificationEmail({
               margin: "0 0 24px",
             }}
           >
-            {recipientName ? `Hi ${recipientName}, ` : ""}
-            your account is ready. The dashboard and onboarding flow are
-            prepared so you can start using the platform right away.
+            {emailLead}
           </p>
 
+          {securePassword ? (
+            <div
+              style={{
+                border: `1px solid ${emailColors.border}`,
+                marginBottom: 24,
+                padding: 16,
+              }}
+            >
+              <div
+                style={{
+                  color: emailColors.primary,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: "0.22em",
+                  marginBottom: 10,
+                  textTransform: "uppercase",
+                }}
+              >
+                Secure password
+              </div>
+              <div
+                style={{
+                  backgroundColor: "#f5f7fb",
+                  fontFamily:
+                    '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace',
+                  fontSize: 18,
+                  letterSpacing: "0.08em",
+                  padding: "12px 14px",
+                  wordBreak: "break-all",
+                }}
+              >
+                {securePassword}
+              </div>
+              {securityNote ? (
+                <p style={{ color: emailColors.muted, fontSize: 13, margin: "12px 0 0" }}>
+                  {securityNote}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+
           <a
-            href={onboardingUrl}
+            href={actionUrl}
             style={{
               backgroundColor: emailColors.primary,
               color: emailColors.primaryForeground,
@@ -131,7 +198,7 @@ export function WelcomeNotificationEmail({
               textDecoration: "none",
             }}
           >
-            Complete onboarding
+            {actionLabel}
           </a>
 
           <div
@@ -142,7 +209,7 @@ export function WelcomeNotificationEmail({
               marginTop: 4,
             }}
           >
-            {onboardingSteps.map((step, index) => (
+            {emailSteps.map((step, index) => (
               <div
                 key={step.title}
                 style={{
@@ -174,8 +241,8 @@ export function WelcomeNotificationEmail({
         </div>
 
         <p style={{ color: emailColors.muted, fontSize: 12, margin: "16px 0 0" }}>
-          If the button above does not work, open {onboardingUrl} in your
-          browser. This message was sent from {appName}.
+          If the button above does not work, open {actionUrl} in your browser.
+          This message was sent from {appName}.
         </p>
       </div>
     </div>

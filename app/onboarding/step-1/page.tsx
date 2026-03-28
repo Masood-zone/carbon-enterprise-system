@@ -62,6 +62,10 @@ export default function OnboardingStepOnePage() {
   const region = useWatch({ control, name: "region" })
   const selectedTown = useWatch({ control, name: "town" })
   const townOptions = getTownOptions(region)
+  const townSelectItems = townOptions.map((town) => ({
+    label: town,
+    value: town,
+  }))
 
   useEffect(() => {
     const onboardingDraft = getBusinessOnboardingDraft()
@@ -261,9 +265,13 @@ export default function OnboardingStepOnePage() {
                           rules={{ required: "Town is required" }}
                           render={({ field }) => (
                             <Select
-                              onValueChange={field.onChange}
-                              value={field.value}
+                              items={townSelectItems}
+                              onValueChange={(value) =>
+                                field.onChange(value ?? "")
+                              }
+                              value={field.value || null}
                               disabled={!region}
+                              key={region || "town-select"}
                             >
                               <SelectTrigger className="w-full" id="town">
                                 <SelectValue

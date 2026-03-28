@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
 
+import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { notificationsService } from "@/lib/notifications"
 import type {
   BusinessOnboardingDraft,
   BusinessOnboardingTeamMember,
@@ -30,6 +32,82 @@ function sanitizeTeamMembers(
     }))
 }
 
+async function provisionTeamMembersForBusiness({
+  businessId,
+  businessName,
+  teamMembers,
+}: {
+  businessId: string
+  businessName: string
+  teamMembers: BusinessOnboardingTeamMember[]
+}) {
+  const provisionedTeamMembers: Array<{
+    email: string
+    fullName: string
+    role: BusinessOnboardingTeamMember["role"]
+  }> = []
+  const failedTeamMembers: Array<{
+    email: string
+    fullName: string
+    role: BusinessOnboardingTeamMember["role"]
+    reason: string
+  }> = []
+
+  for (const teamMember of teamMembers) {
+    const password = notificationsService.generateBusinessTeamMemberPassword()
+
+    try {
+      const createdAccount = await auth.api.signUpEmail({
+        body: {
+          email: teamMember.email,
+          password,
+          name: teamMember.fullName,
+        },
+      })
+
+      await prisma.user.update({
+        where: {
+          id: createdAccount.user.id,
+        },
+        data: {
+          businessId,
+          role: teamMember.role,
+          lastActiveAt: new Date(),
+        },
+      })
+
+      await notificationsService.sendBusinessTeamMemberWelcomeEmail({
+        recipientEmail: teamMember.email,
+        recipientName: teamMember.fullName,
+        businessName,
+        role: teamMember.role,
+        password,
+      })
+
+      provisionedTeamMembers.push({
+        email: teamMember.email,
+        fullName: teamMember.fullName,
+        role: teamMember.role,
+      })
+    } catch (error) {
+      failedTeamMembers.push({
+        email: teamMember.email,
+        fullName: teamMember.fullName,
+        role: teamMember.role,
+        reason:
+          error instanceof Error
+            ? error.message
+            : "Failed to provision team member",
+      })
+    }
+  }
+
+  return {
+    failedTeamMembers,
+    provisionedTeamMembers,
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as CompleteBusinessOnboardingBody
@@ -49,6 +127,11 @@ export async function POST(request: Request) {
     const adminEmail = onboarding.teamSetup.adminEmail.trim().toLowerCase()
     const adminName = onboarding.teamSetup.adminName.trim()
     const teamMembers = sanitizeTeamMembers(onboarding.teamSetup.teamMembers)
+      .filter((member) => member.email !== adminEmail)
+      .filter(
+        (member, index, list) =>
+          list.findIndex((current) => current.email === member.email) === index
+      )
     const businessInfo = onboarding.businessInfo
     const financeSetup = onboarding.financeSetup
     const location = [businessInfo.town.trim(), businessInfo.region.trim()]
@@ -135,9 +218,30 @@ export async function POST(request: Request) {
       return createdBusiness
     })
 
+    try {
+      await notificationsService.sendBusinessLaunchWelcomeEmail({
+        recipientEmail: existingUser.email,
+        recipientName:
+          adminName || existingUser.name || businessInfo.businessName,
+        businessName: business.name,
+      })
+    } catch (notificationError) {
+      console.error(
+        "Failed to send business launch welcome email",
+        notificationError
+      )
+    }
+
+    const teamMemberProvisioning = await provisionTeamMembersForBusiness({
+      businessId: business.id,
+      businessName: business.name,
+      teamMembers,
+    })
+
     return NextResponse.json({
       ok: true,
       businessId: business.id,
+      teamMemberProvisioning,
       onboarding,
       userId: existingUser.id,
     })
