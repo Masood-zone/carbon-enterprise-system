@@ -91,7 +91,6 @@ export const metadata: Metadata = {
     ],
   },
   manifest: "/site.webmanifest",
-  themeColor: "#0f62fe",
 }
 
 export const viewport: Viewport = {
