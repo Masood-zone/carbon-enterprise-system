@@ -1,15 +1,29 @@
-import { Geist, Geist_Mono, Inter } from "next/font/google"
+import type { Metadata } from "next"
+import { Geist_Mono, IBM_Plex_Sans } from "next/font/google"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
-const inter = Inter({subsets:['latin'],variable:'--font-sans'})
+const ibmPlexSans = IBM_Plex_Sans({
+  subsets: ["latin"],
+  variable: "--font-ibm-plex-sans",
+  weight: ["300", "400", "500", "600"],
+})
 
 const fontMono = Geist_Mono({
   subsets: ["latin"],
-  variable: "--font-mono",
+  variable: "--font-geist-mono",
 })
+
+export const metadata: Metadata = {
+  title: {
+    default: "Carbon Enterprise",
+    template: "%s | Carbon Enterprise",
+  },
+  description:
+    "Carbon Enterprise is a smart inventory management system for enterprise operations.",
+}
 
 export default function RootLayout({
   children,
@@ -20,9 +34,9 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("antialiased", fontMono.variable, "font-sans", inter.variable)}
+      className={cn("antialiased", ibmPlexSans.variable, fontMono.variable)}
     >
-      <body>
+      <body className="min-h-svh bg-background font-sans text-foreground">
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
