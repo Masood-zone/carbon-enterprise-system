@@ -4,6 +4,7 @@ import { Geist_Mono, IBM_Plex_Sans } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
+import { Providers } from "@/components/provider"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
 
@@ -112,7 +113,7 @@ export default function RootLayout({
       className={cn("antialiased", ibmPlexSans.variable, fontMono.variable)}
     >
       <body className="min-h-svh bg-background font-sans text-foreground">
-        <ThemeProvider>{children}</ThemeProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   )

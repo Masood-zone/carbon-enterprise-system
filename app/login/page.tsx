@@ -1,11 +1,10 @@
 import Link from "next/link"
-
-import { ArrowRight, Eye, KeyRound, ShieldCheck } from "lucide-react"
-
 import { CarbonBrand } from "@/components/carbon-brand"
+import { LoginForm } from "./login-form"
 
 export const metadata = {
-  title: "Login",
+  title: "Login - Carbon Enterprise",
+  description: "Secure login to access your Carbon Enterprise dashboard.",
 }
 
 export default function LoginPage() {
@@ -48,110 +47,18 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <form className="space-y-8">
-            <div className="space-y-2">
-              <label
-                className="text-xs font-semibold tracking-[0.28em] text-muted-foreground uppercase"
-                htmlFor="user-id"
-              >
-                User ID
-              </label>
-              <input
-                className="carbon-input"
-                id="user-id"
-                name="user-id"
-                placeholder="name@company.com"
-                type="email"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-end justify-between gap-4">
-                <label
-                  className="text-xs font-semibold tracking-[0.28em] text-muted-foreground uppercase"
-                  htmlFor="password"
-                >
-                  Password
-                </label>
-              </div>
-              <div className="relative">
-                <input
-                  className="carbon-input pr-12"
-                  id="password"
-                  name="password"
-                  placeholder="••••••••"
-                  type="password"
-                />
-                <button
-                  aria-label="Show password"
-                  className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
-                  type="button"
-                >
-                  <Eye className="h-4 w-4" aria-hidden="true" />
-                </button>
-              </div>
-              <div className="pt-1">
-                <Link
-                  className="text-xs font-medium text-primary hover:underline"
-                  href="/forgot-password"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-            </div>
-
-            <button
-              className="carbon-button-primary w-full justify-between px-4"
-              type="submit"
-            >
-              <span>Continue to workspace</span>
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </button>
-
-            <div className="pt-6">
-              <div className="mb-6 flex items-center gap-4">
-                <div className="h-px flex-1 bg-border" />
-                <span className="text-[10px] font-bold tracking-[0.32em] text-muted-foreground uppercase">
-                  Enterprise access
-                </span>
-                <div className="h-px flex-1 bg-border" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-px border border-border bg-border">
-                <button
-                  className="flex h-12 items-center justify-center gap-2 bg-background text-xs font-medium text-foreground transition-colors hover:bg-muted"
-                  type="button"
-                >
-                  <KeyRound className="h-3.5 w-3.5" aria-hidden="true" />
-                  SSO
-                </button>
-                <button
-                  className="flex h-12 items-center justify-center gap-2 bg-background text-xs font-medium text-foreground transition-colors hover:bg-muted"
-                  type="button"
-                >
-                  <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
-                  IAM
-                </button>
-              </div>
-            </div>
-          </form>
+          <div className="space-y-8">
+            <LoginForm />
+          </div>
 
           <footer className="mt-16 border-t border-border pt-8 text-xs text-muted-foreground">
             <p className="mb-4">Don&apos;t have a business account?</p>
             <Link
               className="font-semibold text-primary hover:underline"
-              href="/"
+              href="/onboarding/step-1"
             >
-              Explore Carbon Enterprise
+              Get Started Today
             </Link>
-            <div className="mt-10 flex flex-wrap gap-x-6 gap-y-2">
-              <a className="transition-colors hover:text-foreground" href="#">
-                Privacy
-              </a>
-              <a className="transition-colors hover:text-foreground" href="#">
-                Terms
-              </a>
-            </div>
           </footer>
         </div>
       </section>
