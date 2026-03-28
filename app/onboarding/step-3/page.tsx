@@ -1,31 +1,84 @@
+"use client"
+
 import Link from "next/link"
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { Controller, useFieldArray, useForm } from "react-hook-form"
 
-import { ChevronLeft, UserPlus, Trash2 } from "lucide-react"
+import { ChevronLeft, Plus, Trash2 } from "lucide-react"
 
-import { OnboardingTopBar } from "@/components/onboarding/onboarding-ui"
+import {
+  OnboardingStepper,
+  OnboardingTopBar,
+} from "@/components/onboarding/onboarding-ui"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  getBusinessOnboardingDraft,
+  type TeamSetupStepValues,
+  useStoreBusinessOnboardingStep,
+} from "@/services/onboarding/business-onboarding"
 
-export const metadata = {
-  title: "Onboarding Step 3",
-}
+type OnboardingStepState = "complete" | "current" | "upcoming"
 
-const managers = [
-  {
-    initials: "AO",
-    name: "Abena Osei",
-    email: "abena.osei@enterprise.gh",
-    role: "Operations Lead",
-    accent: "bg-slate-200 text-slate-800",
-  },
-  {
-    initials: "KB",
-    name: "Kofi Boateng",
-    email: "k.boateng@enterprise.gh",
-    role: "Regional Manager",
-    accent: "bg-blue-100 text-blue-900",
-  },
+const stepProgress: OnboardingStepState[] = [
+  "complete",
+  "complete",
+  "current",
+  "upcoming",
 ]
 
 export default function OnboardingStepThreePage() {
+  const router = useRouter()
+  const storeStep = useStoreBusinessOnboardingStep()
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<TeamSetupStepValues>({
+    defaultValues: {
+      adminName: "",
+      adminEmail: "",
+      adminPassword: "",
+      teamMembers: [],
+    },
+  })
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "teamMembers",
+  })
+
+  useEffect(() => {
+    const onboardingDraft = getBusinessOnboardingDraft()
+
+    if (onboardingDraft.teamSetup) {
+      reset(onboardingDraft.teamSetup)
+      return
+    }
+
+    if (fields.length === 0) {
+      append({ fullName: "", email: "", role: "MANAGER" })
+    }
+  }, [append, fields.length, reset])
+
+  const onSubmit = async (values: TeamSetupStepValues) => {
+    await storeStep.mutateAsync({
+      stepKey: "team-setup",
+      values,
+    })
+
+    router.push("/onboarding/step-4")
+  }
+
   return (
     <main className="carbon-page flex min-h-svh flex-col bg-muted/30">
       <OnboardingTopBar
@@ -39,149 +92,286 @@ export default function OnboardingStepThreePage() {
       />
 
       <div className="flex flex-1 justify-center px-4 py-16 pt-20 sm:px-6 lg:px-8">
-        <div className="w-full max-w-2xl">
-          <div className="carbon-card overflow-hidden bg-background shadow-sm">
-            <div className="h-1 w-3/4 bg-primary" />
+        <div className="w-full max-w-5xl">
+          <div className="flex justify-center">
+            <OnboardingStepper steps={stepProgress} />
+          </div>
 
-            <div className="border-b border-border px-6 py-8 sm:px-10 sm:py-10">
-              <p className="carbon-kicker text-muted-foreground">Step 3 of 4</p>
-              <h1 className="mt-2 text-3xl font-light tracking-tight text-foreground sm:text-4xl">
-                Add Initial Team
-              </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-                Setup your administrative structure.
-              </p>
+          <div className="mt-6 space-y-6">
+            <section className="carbon-card w-full overflow-hidden bg-background shadow-sm">
+              <div className="h-1 w-3/4 bg-primary" />
 
-              <div className="mt-8 space-y-8">
-                <div className="border border-border bg-muted p-6 sm:p-8">
+              <form onSubmit={handleSubmit(onSubmit)}>
+                <div className="border-b border-border px-6 py-8 sm:px-10 sm:py-10">
                   <p className="carbon-kicker text-muted-foreground">
-                    Add new manager
+                    Step 3 of 4
                   </p>
-                  <div className="mt-6 grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <label
-                        className="text-xs font-medium text-muted-foreground"
-                        htmlFor="full-name"
-                      >
-                        Full Name
-                      </label>
-                      <input
-                        className="carbon-input"
-                        id="full-name"
-                        name="full-name"
-                        placeholder="e.g. Kwame Mensah"
-                        type="text"
-                      />
+                  <h1 className="mt-2 text-3xl font-light tracking-tight text-foreground sm:text-4xl">
+                    Account and Team Setup
+                  </h1>
+                  <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
+                    Create the admin account and capture any additional members
+                    you want staged for the business.
+                  </p>
+
+                  <div className="mt-8 space-y-8">
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2 md:col-span-1">
+                        <label
+                          className="text-xs font-semibold tracking-[0.28em] text-foreground uppercase"
+                          htmlFor="adminName"
+                        >
+                          Admin Name
+                        </label>
+                        <input
+                          className="carbon-input"
+                          id="adminName"
+                          placeholder="e.g. Kwame Mensah"
+                          type="text"
+                          aria-invalid={errors.adminName ? "true" : "false"}
+                          {...register("adminName", {
+                            required: "Admin name is required",
+                          })}
+                        />
+                        {errors.adminName ? (
+                          <p className="text-xs font-medium text-destructive">
+                            {errors.adminName.message}
+                          </p>
+                        ) : null}
+                      </div>
+
+                      <div className="space-y-2 md:col-span-1">
+                        <label
+                          className="text-xs font-semibold tracking-[0.28em] text-foreground uppercase"
+                          htmlFor="adminEmail"
+                        >
+                          Admin Email
+                        </label>
+                        <input
+                          className="carbon-input"
+                          id="adminEmail"
+                          placeholder="admin@company.com"
+                          type="email"
+                          aria-invalid={errors.adminEmail ? "true" : "false"}
+                          {...register("adminEmail", {
+                            required: "Admin email is required",
+                          })}
+                        />
+                        {errors.adminEmail ? (
+                          <p className="text-xs font-medium text-destructive">
+                            {errors.adminEmail.message}
+                          </p>
+                        ) : null}
+                      </div>
                     </div>
 
                     <div className="space-y-2">
                       <label
-                        className="text-xs font-medium text-muted-foreground"
-                        htmlFor="work-email"
+                        className="text-xs font-semibold tracking-[0.28em] text-foreground uppercase"
+                        htmlFor="adminPassword"
                       >
-                        Work Email
+                        Admin Password
                       </label>
                       <input
                         className="carbon-input"
-                        id="work-email"
-                        name="work-email"
-                        placeholder="kwame@company.com"
-                        type="email"
+                        id="adminPassword"
+                        placeholder="Create a secure password"
+                        type="password"
+                        aria-invalid={errors.adminPassword ? "true" : "false"}
+                        {...register("adminPassword", {
+                          required: "Admin password is required",
+                          minLength: {
+                            value: 8,
+                            message: "Password must be at least 8 characters",
+                          },
+                        })}
                       />
+                      {errors.adminPassword ? (
+                        <p className="text-xs font-medium text-destructive">
+                          {errors.adminPassword.message}
+                        </p>
+                      ) : null}
                     </div>
-                  </div>
 
-                  <div className="mt-4 space-y-2">
-                    <label
-                      className="text-xs font-medium text-muted-foreground"
-                      htmlFor="role"
-                    >
-                      Administrative Role
-                    </label>
-                    <div className="relative">
-                      <input
-                        className="carbon-input pr-10"
-                        id="role"
-                        name="role"
-                        defaultValue="Regional Manager"
-                        type="text"
-                      />
-                      <ChevronLeft
-                        className="pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 -rotate-90 text-muted-foreground"
-                        aria-hidden="true"
-                      />
-                    </div>
-                  </div>
+                    <section className="border border-border bg-muted p-6 sm:p-8">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="carbon-kicker text-muted-foreground">
+                            Additional team members
+                          </p>
+                          <h2 className="mt-2 text-xl font-semibold tracking-tight text-foreground">
+                            Admin and manager roles only
+                          </h2>
+                        </div>
+                        <button
+                          className="carbon-button-secondary"
+                          type="button"
+                          onClick={() =>
+                            append({ fullName: "", email: "", role: "MANAGER" })
+                          }
+                        >
+                          <Plus className="h-4 w-4" aria-hidden="true" />
+                          Add Member
+                        </button>
+                      </div>
 
-                  <div className="mt-6 flex justify-end">
-                    <button className="carbon-button-primary" type="button">
-                      <UserPlus className="h-4 w-4" aria-hidden="true" />
-                      Add Member
-                    </button>
+                      <div className="mt-6 space-y-4">
+                        {fields.map((field, index) => (
+                          <article
+                            key={field.id}
+                            className="border border-border bg-background p-4"
+                          >
+                            <div className="grid gap-4 md:grid-cols-[1.2fr_1.1fr_0.7fr_auto] md:items-end">
+                              <div className="space-y-2">
+                                <label
+                                  className="text-xs font-medium text-muted-foreground"
+                                  htmlFor={`teamMembers.${index}.fullName`}
+                                >
+                                  Full Name
+                                </label>
+                                <input
+                                  className="carbon-input"
+                                  id={`teamMembers.${index}.fullName`}
+                                  placeholder="e.g. Ama Boateng"
+                                  type="text"
+                                  {...register(
+                                    `teamMembers.${index}.fullName`,
+                                    {
+                                      required: "Member name is required",
+                                    }
+                                  )}
+                                />
+                              </div>
+
+                              <div className="space-y-2">
+                                <label
+                                  className="text-xs font-medium text-muted-foreground"
+                                  htmlFor={`teamMembers.${index}.email`}
+                                >
+                                  Email
+                                </label>
+                                <input
+                                  className="carbon-input"
+                                  id={`teamMembers.${index}.email`}
+                                  placeholder="member@company.com"
+                                  type="email"
+                                  {...register(`teamMembers.${index}.email`, {
+                                    required: "Member email is required",
+                                  })}
+                                />
+                              </div>
+
+                              <div className="space-y-2">
+                                <label
+                                  className="text-xs font-medium text-muted-foreground"
+                                  htmlFor={`teamMembers.${index}.role`}
+                                >
+                                  Role
+                                </label>
+                                <Controller
+                                  control={control}
+                                  name={`teamMembers.${index}.role`}
+                                  render={({ field: roleField }) => (
+                                    <Select
+                                      onValueChange={roleField.onChange}
+                                      value={roleField.value}
+                                    >
+                                      <SelectTrigger
+                                        className="w-full"
+                                        id={`teamMembers.${index}.role`}
+                                      >
+                                        <SelectValue placeholder="Select role" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="ADMIN">
+                                          ADMIN
+                                        </SelectItem>
+                                        <SelectItem value="MANAGER">
+                                          MANAGER
+                                        </SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  )}
+                                />
+                              </div>
+
+                              <div className="flex justify-end">
+                                <button
+                                  aria-label={`Remove member ${index + 1}`}
+                                  className="inline-flex h-11 items-center justify-center border border-border bg-background px-3 text-muted-foreground transition-colors hover:bg-muted hover:text-destructive"
+                                  type="button"
+                                  onClick={() => remove(index)}
+                                  disabled={fields.length === 1}
+                                >
+                                  <Trash2
+                                    className="h-4 w-4"
+                                    aria-hidden="true"
+                                  />
+                                </button>
+                              </div>
+                            </div>
+                          </article>
+                        ))}
+                      </div>
+
+                      <p className="mt-4 text-xs leading-5 text-muted-foreground">
+                        Only ADMIN and MANAGER roles are allowed during
+                        onboarding. Members are captured now and can be
+                        activated after launch.
+                      </p>
+                    </section>
                   </div>
                 </div>
 
-                <section className="border border-border bg-background p-6 sm:p-8">
-                  <p className="carbon-kicker text-muted-foreground">
-                    Registered Managers (2)
-                  </p>
-                  <div className="mt-4 space-y-4">
-                    {managers.map((manager) => (
-                      <article
-                        key={manager.name}
-                        className="flex items-center justify-between gap-4 border border-border bg-muted p-4"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`flex h-10 w-10 items-center justify-center text-xs font-semibold ${manager.accent}`}
-                          >
-                            {manager.initials}
-                          </div>
-                          <div>
-                            <h3 className="text-sm font-semibold text-foreground">
-                              {manager.name}
-                            </h3>
-                            <p className="text-xs text-muted-foreground">
-                              {manager.email} • {manager.role}
-                            </p>
-                          </div>
-                        </div>
-                        <button
-                          aria-label={`Remove ${manager.name}`}
-                          className="text-muted-foreground transition-colors hover:text-destructive"
-                          type="button"
-                        >
-                          <Trash2 className="h-4 w-4" aria-hidden="true" />
-                        </button>
-                      </article>
-                    ))}
-                  </div>
-                </section>
+                <div className="flex flex-col gap-4 px-6 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-10">
+                  <Link
+                    className="carbon-button-secondary"
+                    href="/onboarding/step-2"
+                  >
+                    <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+                    Back
+                  </Link>
+                  <button
+                    className="carbon-button-primary w-full cursor-pointer sm:w-auto"
+                    type="submit"
+                    disabled={isSubmitting || storeStep.isPending}
+                  >
+                    <span>
+                      {isSubmitting || storeStep.isPending
+                        ? "Saving..."
+                        : "Continue to Review"}
+                    </span>
+                    <span className="text-base leading-none">→</span>
+                  </button>
+                </div>
+              </form>
+            </section>
+
+            <aside className="space-y-4">
+              <div className="carbon-card bg-background p-6 shadow-sm">
+                <p className="carbon-kicker text-primary">Account flow</p>
+                <h2 className="mt-3 text-2xl font-semibold tracking-tight text-foreground">
+                  The admin account anchors the business.
+                </h2>
+                <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                  The final step will create the admin account and attach it to
+                  the business record.
+                </p>
               </div>
-            </div>
 
-            <div className="flex flex-col gap-4 px-6 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-10">
-              <Link
-                className="carbon-button-secondary"
-                href="/onboarding/step-2"
-              >
-                <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-                Back
-              </Link>
-              <Link
-                className="carbon-button-primary w-full sm:w-auto"
-                href="/onboarding/step-4"
-              >
-                Continue to Final Step
-                <span className="text-base leading-none">→</span>
-              </Link>
-            </div>
-          </div>
-
-          <div className="mt-6 border border-border bg-muted p-4 text-xs leading-6 text-muted-foreground">
-            Managers added during onboarding will receive an activation email
-            once the setup is complete. You can modify permissions and add
-            additional team members from the Dashboard after launch.
+              <div className="carbon-card border border-border bg-muted p-6 shadow-sm">
+                <p className="text-[11px] tracking-[0.28em] text-muted-foreground uppercase">
+                  Team member rules
+                </p>
+                <ul className="mt-4 space-y-3 text-sm leading-6 text-foreground">
+                  <li>Only ADMIN and MANAGER roles are available.</li>
+                  <li>Email and name are required for every team member.</li>
+                  <li>
+                    At least one team member can be staged besides the admin.
+                  </li>
+                </ul>
+              </div>
+            </aside>
           </div>
         </div>
       </div>
