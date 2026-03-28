@@ -8,15 +8,22 @@ import { cn } from "@/lib/utils"
 type OnboardingTopBarProps = {
   rightSlot?: ReactNode
   className?: string
+  compactBrandOnMobile?: boolean
 }
 
-function OnboardingTopBar({ rightSlot, className }: OnboardingTopBarProps) {
+function OnboardingTopBar({
+  rightSlot,
+  className,
+  compactBrandOnMobile = true,
+}: OnboardingTopBarProps) {
   return (
     <header className={cn("border-b border-border bg-background", className)}>
-      <div className="carbon-section flex h-12 items-center justify-between gap-4">
-        <CarbonBrand />
+      <div className="carbon-section flex h-auto items-start justify-between gap-3 py-2 sm:h-12 sm:items-center sm:gap-4">
+        <CarbonBrand compactOnMobile={compactBrandOnMobile} />
         {rightSlot ? (
-          <div className="flex items-center gap-2">{rightSlot}</div>
+          <div className="flex max-w-full flex-wrap items-center justify-end gap-1 sm:gap-2">
+            {rightSlot}
+          </div>
         ) : null}
       </div>
     </header>
