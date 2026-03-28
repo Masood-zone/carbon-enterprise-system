@@ -17,6 +17,104 @@ enum Role {
   MANAGER
 }
 
+enum BusinessStatus {
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+enum ThemeMode {
+  SYSTEM
+  LIGHT
+  DARK
+}
+
+enum ForecastGranularity {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum ForecastStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+  ARCHIVED
+}
+
+enum TrendDirection {
+  UP
+  DOWN
+  STABLE
+  VOLATILE
+}
+
+enum StockMovementType {
+  SALE
+  PURCHASE
+  RETURN
+  ADJUSTMENT
+  TRANSFER
+  COUNT
+  WRITE_OFF
+}
+
+enum PurchaseOrderStatus {
+  DRAFT
+  SENT
+  PARTIALLY_RECEIVED
+  RECEIVED
+  CANCELLED
+}
+
+enum RecommendationType {
+  REORDER
+  STOCK_REDUCTION
+  PROMOTION
+  PRICE_ADJUSTMENT
+  TRANSFER
+  PURCHASE_PLAN
+}
+
+enum RecommendationStatus {
+  NEW
+  ACKNOWLEDGED
+  APPLIED
+  DISMISSED
+  EXPIRED
+}
+
+enum InsightPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AlertType {
+  STOCKOUT_RISK
+  OVERSTOCK_RISK
+  DEMAND_SPIKE
+  DEMAND_DROP
+  FORECAST_DEVIATION
+  REORDER_DUE
+  SYSTEM
+}
+
+enum AlertStatus {
+  UNREAD
+  READ
+  ARCHIVED
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  VOIDED
+  REFUNDED
+}
+
 model User {
   id         String   @id @default(uuid())
   name       String
@@ -29,69 +127,179 @@ model User {
   updatedAt     DateTime  @updatedAt
   emailVerified Boolean   @default(false)
   image         String?
+  lastActiveAt  DateTime?
   sessions      Session[]
   accounts      Account[]
+  transactions  Transaction[]
+  alerts        Alert[]
+  createdPurchaseOrders PurchaseOrder[]
+  stockMovements StockMovement[]
+  forecastRuns   ForecastRun[]
+  preference    UserPreference?
 
   @@map("user")
 }
 
 model Business {
-  id       String @id @default(uuid())
-  name     String
-  type     String // e.g. Retail, Service, Trading
-  location String // e.g. Accra, Kumasi
-  currency String @default("GHS")
-  taxRate  Float? // Ghana VAT if applicable
+  id                     String         @id @default(uuid())
+  slug                   String?        @unique
+  name                   String
+  type                   String // e.g. Retail, Service, Trading
+  location               String // e.g. Accra, Kumasi
+  registrationNumber     String?
+  taxIdentificationNumber String?
+  phone                  String?
+  email                  String?
+  currency               String         @default("GHS")
+  taxRate                Float? // Ghana VAT if applicable
+  timezone               String         @default("Africa/Accra")
+  status                 BusinessStatus  @default(ACTIVE)
+  onboardingCompleted    Boolean        @default(false)
+  metadata               Json?
 
-  users        User[]
-  products     Product[]
-  customers    Customer[]
-  transactions Transaction[]
-  expenses     Expense[]
+  users                 User[]
+  settings              BusinessSettings?
+  products              Product[]
+  customers             Customer[]
+  suppliers             Supplier[]
+  purchaseOrders        PurchaseOrder[]
+  transactions          Transaction[]
+  expenses              Expense[]
+  stockMovements        StockMovement[]
+  inventorySnapshots    InventorySnapshot[]
+  analyticsCache        AnalyticsCache[]
+  forecastRuns          ForecastRun[]
+  demandForecasts       DemandForecast[]
+  forecastEvaluations   ForecastEvaluation[]
+  demandTrends          DemandTrend[]
+  inventoryRecommendations InventoryRecommendation[]
+  alerts                Alert[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model Product {
-  id          String   @id @default(uuid())
-  name        String
-  description String?
-  price       Float
-  stock       Int
-  businessId  String
-  business    Business @relation(fields: [businessId], references: [id])
+model BusinessSettings {
+  id                         String             @id @default(uuid())
+  businessId                 String             @unique
+  business                   Business           @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  defaultForecastGranularity ForecastGranularity @default(WEEKLY)
+  forecastHorizonDays        Int                @default(30)
+  analyticsWindowDays        Int                @default(90)
+  lowStockThreshold          Int                @default(10)
+  reorderReviewIntervalDays  Int                @default(7)
+  stockoutAlertThreshold     Int                @default(3)
+  overstockAlertThreshold    Int                @default(90)
+  autoReorderEnabled         Boolean            @default(false)
+  adaptiveInsightsEnabled    Boolean            @default(true)
+  dashboardDefaults          Json?
+  analyticsConfig            Json?
+  createdAt                  DateTime           @default(now())
+  updatedAt                  DateTime           @updatedAt
+}
 
-  transactions TransactionItem[]
+model UserPreference {
+  id                    String     @id @default(uuid())
+  userId                String     @unique
+  user                  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  themeMode             ThemeMode  @default(SYSTEM)
+  compactMode           Boolean    @default(false)
+  preferredLandingPage  String?
+  timezone              String?
+  language              String?
+  dateFormat            String?
+  dashboardLayout       Json?
+  filterState           Json?
+  notificationSettings  Json?
+  adaptiveSignals       Json?
+  updatedAt             DateTime   @updatedAt
+  createdAt             DateTime   @default(now())
+}
+
+model Product {
+  id                 String   @id @default(uuid())
+  businessId         String
+  business           Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  sku                String?
+  barcode            String?
+  name               String
+  category           String?
+  unitOfMeasure      String?
+  description        String?
+  price              Float
+  costPrice          Float?
+  stock              Int
+  reservedStock      Int      @default(0)
+  reorderPoint       Int      @default(0)
+  reorderQuantity    Int?
+  safetyStock        Int      @default(0)
+  leadTimeDays       Int?
+  isActive           Boolean  @default(true)
+  lastStockCountedAt DateTime?
+
+  transactions      TransactionItem[]
+  stockMovements    StockMovement[]
+  inventorySnapshots InventorySnapshot[]
+  forecasts         DemandForecast[]
+  forecastEvaluations ForecastEvaluation[]
+  purchaseOrderItems PurchaseOrderItem[]
+  trends            DemandTrend[]
+  recommendations   InventoryRecommendation[]
+  analyticsCache    AnalyticsCache[]
+
+  @@unique([businessId, sku])
+  @@index([businessId, name])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Customer {
-  id         String   @id @default(uuid())
-  name       String
-  phone      String?
-  email      String?
-  businessId String
-  business   Business @relation(fields: [businessId], references: [id])
+  id            String   @id @default(uuid())
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  name          String
+  phone         String?
+  email         String?
+  segment       String?
+  lifetimeValue Float    @default(0)
+  lastPurchaseAt DateTime?
+  notes         String?
+  isActive      Boolean  @default(true)
 
   transactions Transaction[]
+
+  @@index([businessId, name])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Transaction {
-  id          String   @id @default(uuid())
-  totalAmount Float
-  businessId  String
-  business    Business @relation(fields: [businessId], references: [id])
-
-  customerId String?
-  customer   Customer? @relation(fields: [customerId], references: [id])
+  id                String            @id @default(uuid())
+  businessId        String
+  business          Business          @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  customerId        String?
+  customer          Customer?         @relation(fields: [customerId], references: [id])
+  soldByUserId      String?
+  soldBy            User?             @relation(fields: [soldByUserId], references: [id])
+  transactionNumber String?
+  reference         String?
+  status            TransactionStatus @default(COMPLETED)
+  paymentMethod     String?
+  totalAmount       Float
+  subtotal          Float             @default(0)
+  discountAmount    Float             @default(0)
+  taxAmount         Float             @default(0)
+  costAmount        Float             @default(0)
+  profitAmount      Float             @default(0)
+  soldAt            DateTime          @default(now())
 
   items TransactionItem[]
+
+  @@index([businessId, soldAt])
+  @@index([customerId])
+  @@index([soldByUserId])
 
   createdAt DateTime @default(now())
 }
@@ -102,30 +310,290 @@ model TransactionItem {
   productId     String
   quantity      Int
   price         Float
+  costPrice     Float?
+  discountAmount Float @default(0)
+  lineTotal     Float  @default(0)
 
   transaction Transaction @relation(fields: [transactionId], references: [id])
   product     Product     @relation(fields: [productId], references: [id])
+  stockMovements StockMovement[]
+
+  @@index([transactionId])
+  @@index([productId])
 }
 
 model Expense {
-  id         String   @id @default(uuid())
-  title      String
-  amount     Float
-  category   String // e.g. Rent, Utilities, Transport
-  businessId String
-  business   Business @relation(fields: [businessId], references: [id])
+  id          String   @id @default(uuid())
+  businessId  String
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  title       String
+  amount      Float
+  category    String // e.g. Rent, Utilities, Transport
+  vendorName  String?
+  notes       String?
+  occurredAt  DateTime @default(now())
 
   createdAt DateTime @default(now())
+
+  @@index([businessId, occurredAt])
 }
 
 model AnalyticsCache {
-  id         String @id @default(uuid())
-  businessId String
-  metric     String // e.g. revenue, profit
-  value      Float
-  period     String // daily, monthly
+  id          String            @id @default(uuid())
+  businessId  String
+  business    Business          @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  productId   String?
+  product     Product?          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  metricKey   String // e.g. revenue, profit
+  granularity ForecastGranularity @default(DAILY)
+  periodStart DateTime
+  periodEnd   DateTime
+  value       Float
+  source      String?
+  sourceId    String?
+  payload     Json?
+  calculatedAt DateTime          @default(now())
+  expiresAt   DateTime?
 
-  createdAt DateTime @default(now())
+  @@index([businessId, metricKey, granularity, periodStart])
+}
+
+model Supplier {
+  id            String   @id @default(uuid())
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  name          String
+  contactName   String?
+  email         String?
+  phone         String?
+  address       String?
+  leadTimeDays  Int?
+  paymentTerms  String?
+  reliabilityScore Float?
+  notes         String?
+  isActive      Boolean  @default(true)
+  purchaseOrders PurchaseOrder[]
+  inventoryRecommendations InventoryRecommendation[]
+
+  @@index([businessId, name])
+}
+
+model PurchaseOrder {
+  id                String             @id @default(uuid())
+  businessId        String
+  business          Business           @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  supplierId        String
+  supplier          Supplier           @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  createdByUserId   String?
+  createdBy         User?              @relation(fields: [createdByUserId], references: [id])
+  orderNumber       String
+  status            PurchaseOrderStatus @default(DRAFT)
+  orderedAt         DateTime           @default(now())
+  expectedDeliveryAt DateTime?
+  receivedAt        DateTime?
+  subtotal          Float              @default(0)
+  taxAmount         Float              @default(0)
+  totalAmount       Float              @default(0)
+  notes             String?
+
+  items PurchaseOrderItem[]
+
+  @@unique([businessId, orderNumber])
+  @@index([businessId, status, orderedAt])
+}
+
+model PurchaseOrderItem {
+  id              String   @id @default(uuid())
+  purchaseOrderId String
+  purchaseOrder    PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  productId       String
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  quantity        Int
+  receivedQuantity Int      @default(0)
+  unitCost        Float
+  discountAmount  Float     @default(0)
+  lineTotal       Float     @default(0)
+
+  stockMovements StockMovement[]
+
+  @@index([purchaseOrderId])
+  @@index([productId])
+}
+
+model StockMovement {
+  id                 String            @id @default(uuid())
+  businessId         String
+  business           Business          @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  productId          String
+  product            Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  transactionItemId  String?
+  transactionItem    TransactionItem?  @relation(fields: [transactionItemId], references: [id], onDelete: Cascade)
+  purchaseOrderItemId String?
+  purchaseOrderItem  PurchaseOrderItem? @relation(fields: [purchaseOrderItemId], references: [id], onDelete: Cascade)
+  performedByUserId  String?
+  performedBy        User?             @relation(fields: [performedByUserId], references: [id])
+  movementType       StockMovementType
+  quantity           Int
+  unitCost           Float?
+  balanceBefore      Int
+  balanceAfter       Int
+  notes              String?
+  recordedAt         DateTime          @default(now())
+
+  @@index([businessId, productId, recordedAt])
+}
+
+model InventorySnapshot {
+  id                  String   @id @default(uuid())
+  businessId          String
+  business            Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  productId           String
+  product             Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  snapshotDate        DateTime
+  onHandQuantity      Int
+  reservedQuantity    Int      @default(0)
+  availableQuantity   Int
+  averageDailySales   Float?
+  projectedDaysOfCover Float?
+  stockValue          Float?
+  demandRiskScore     Float?
+  metadata            Json?
+  createdAt           DateTime @default(now())
+
+  @@unique([businessId, productId, snapshotDate])
+  @@index([businessId, snapshotDate])
+}
+
+model ForecastRun {
+  id                    String             @id @default(uuid())
+  businessId            String
+  business              Business           @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdByUserId       String?
+  createdBy             User?              @relation(fields: [createdByUserId], references: [id])
+  modelName             String
+  modelVersion          String
+  granularity           ForecastGranularity @default(WEEKLY)
+  horizonDays           Int
+  inputStartDate        DateTime
+  inputEndDate          DateTime
+  status                ForecastStatus     @default(QUEUED)
+  config                Json?
+  startedAt             DateTime           @default(now())
+  completedAt           DateTime?
+  errorMessage          String?
+
+  forecasts DemandForecast[]
+
+  @@index([businessId, startedAt])
+}
+
+model DemandForecast {
+  id               String   @id @default(uuid())
+  businessId       String
+  business         Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  productId        String
+  product          Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  forecastRunId    String
+  forecastRun      ForecastRun @relation(fields: [forecastRunId], references: [id], onDelete: Cascade)
+  forecastDate     DateTime
+  horizonStart     DateTime
+  horizonEnd       DateTime
+  predictedDemand  Float
+  lowerBound       Float?
+  upperBound       Float?
+  confidence       Float?
+  trendDirection   TrendDirection @default(STABLE)
+  seasonalFactor   Float?
+  stockoutRisk     Float?
+  surplusRisk      Float?
+  createdAt        DateTime       @default(now())
+
+  evaluations ForecastEvaluation[]
+
+  @@index([businessId, productId, horizonStart, horizonEnd])
+}
+
+model ForecastEvaluation {
+  id               String   @id @default(uuid())
+  businessId       String
+  business         Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  productId        String
+  product          Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  demandForecastId String
+  demandForecast   DemandForecast @relation(fields: [demandForecastId], references: [id], onDelete: Cascade)
+  actualDemand     Float
+  predictedDemand  Float
+  absoluteError    Float
+  percentageError  Float?
+  evaluatedAt      DateTime @default(now())
+  metadata         Json?
+
+  @@index([businessId, productId, evaluatedAt])
+}
+
+model DemandTrend {
+  id            String   @id @default(uuid())
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  productId     String?
+  product       Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+  metricKey     String
+  periodStart   DateTime
+  periodEnd     DateTime
+  direction     TrendDirection
+  growthRate    Float?
+  volatility    Float?
+  signalStrength Float?
+  summary       String?
+  evidence      Json?
+  createdAt     DateTime @default(now())
+
+  @@index([businessId, productId, periodEnd])
+}
+
+model InventoryRecommendation {
+  id               String              @id @default(uuid())
+  businessId       String
+  business         Business            @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  productId        String?
+  product          Product?            @relation(fields: [productId], references: [id], onDelete: Cascade)
+  supplierId       String?
+  supplier         Supplier?           @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  recommendationType RecommendationType
+  priority         InsightPriority     @default(MEDIUM)
+  title            String
+  description      String
+  rationale        Json?
+  expectedImpact   Float?
+  suggestedAction  String?
+  status           RecommendationStatus @default(NEW)
+  dueAt            DateTime?
+  generatedAt      DateTime            @default(now())
+  acknowledgedAt   DateTime?
+  appliedAt        DateTime?
+  dismissedAt      DateTime?
+
+  @@index([businessId, status, priority])
+}
+
+model Alert {
+  id           String      @id @default(uuid())
+  businessId   String
+  business     Business    @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  userId       String?
+  user         User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  alertType    AlertType
+  severity     InsightPriority @default(MEDIUM)
+  status       AlertStatus @default(UNREAD)
+  title        String
+  message      String
+  sourceModel  String?
+  sourceId     String?
+  payload      Json?
+  triggeredAt  DateTime    @default(now())
+  readAt       DateTime?
+
+  @@index([businessId, userId, status, triggeredAt])
 }
 
 model Session {
