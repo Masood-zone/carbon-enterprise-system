@@ -17,7 +17,7 @@ export default function LoginPage() {
           <div className="max-w-2xl pb-8">
             <p className="carbon-kicker text-white/60">Secure access</p>
             <h1 className="mt-5 text-5xl leading-tight font-light tracking-tight xl:text-6xl">
-              The operating system for modern enterprise.
+              The operating system for modern businesses.
             </h1>
             <p className="mt-8 max-w-xl text-base leading-7 text-white/70">
               Unified data, streamlined workflows, and clear accountability for

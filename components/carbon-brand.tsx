@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils"
+import Link from "next/link"
 
 type CarbonBrandProps = {
   className?: string
@@ -12,7 +13,7 @@ function CarbonBrand({
   compactOnMobile,
 }: CarbonBrandProps) {
   return (
-    <div className={cn("inline-flex items-center gap-3", className)}>
+    <Link href="/" className={cn("inline-flex items-center gap-3", className)}>
       <svg
         aria-hidden="true"
         viewBox="0 0 64 64"
@@ -39,7 +40,7 @@ function CarbonBrand({
           Enterprise
         </div>
       </div>
-    </div>
+    </Link>
   )
 }
 
