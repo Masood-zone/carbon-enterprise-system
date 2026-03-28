@@ -8,3 +8,29 @@
   Creating an optimized production build ...
 ✓ Compiled successfully in 52s
   Running TypeScript ...
+  Collecting page data using 7 workers ...
+  Generating static pages using 7 workers (0/15) ...
+  Generating static pages using 7 workers (3/15) 
+  Generating static pages using 7 workers (7/15) 
+  Generating static pages using 7 workers (11/15) 
+✓ Generating static pages using 7 workers (15/15) in 23.7s
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /forgot-password
+├ ○ /login
+├ ○ /onboarding
+├ ○ /onboarding/step-1
+├ ○ /onboarding/step-2
+├ ○ /onboarding/step-3
+├ ○ /onboarding/step-4
+├ ○ /reset-password
+├ ○ /robots.txt
+├ ○ /sitemap.xml
+└ ○ /verify-otp
+
+
+○  (Static)  prerendered as static content
+
