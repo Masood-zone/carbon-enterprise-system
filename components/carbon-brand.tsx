@@ -28,11 +28,16 @@ function CarbonBrand({
         <path d="M32 20 17 28.5v17L32 54l15-8.5v-17Z" fill="#ffffff" />
         <path d="M32 20 47 28.5V36L32 27.5 17 36v-7.5Z" fill="#d0d4da" />
       </svg>
-      <div className={cn("leading-none", compactOnMobile && "hidden sm:block")}>
-        <div className="text-[1.05rem] font-semibold tracking-tight text-current">
-          Carbon
+      <div
+        className={cn(
+          "leading-none",
+          compactOnMobile ? "text-[0.85rem] sm:text-[1.05rem]" : ""
+        )}
+      >
+        <div className="font-semibold tracking-tight text-current">Carbon</div>
+        <div className="text-[0.72rem] text-current/70 sm:text-sm">
+          Enterprise
         </div>
-        <div className="text-sm text-current/70">Enterprise</div>
       </div>
     </div>
   )
