@@ -2,9 +2,17 @@ import { NextResponse } from "next/server"
 
 import { auth, isAdmin } from "@/lib/auth"
 
-export type AdminSession = NonNullable<
+type AuthSession = NonNullable<
   Awaited<ReturnType<(typeof auth.api)["getSession"]>>
 >
+
+type AdminSessionUser = AuthSession["user"] & {
+  businessId?: string | null
+}
+
+export type AdminSession = Omit<AuthSession, "user"> & {
+  user: AdminSessionUser
+}
 
 export type AdminAccessLevel = "ADMIN" | "MANAGER"
 
