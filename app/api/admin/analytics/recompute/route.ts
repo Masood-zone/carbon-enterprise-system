@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 
+import { isAnalyticsPeriod, type AnalyticsPeriod } from "@/lib/analytics"
 import {
   AnalyticsService,
   type AnalyticsMetricKey,
@@ -11,12 +12,17 @@ export async function POST(request: Request) {
     try {
       const body = (await request.json().catch(() => ({}))) as {
         metrics?: AnalyticsMetricKey[]
+        granularity?: AnalyticsPeriod | string
       }
 
-      const computed = await AnalyticsService.recompute(
-        businessId,
-        body.metrics
-      )
+      const granularity = isAnalyticsPeriod(body.granularity)
+        ? body.granularity
+        : undefined
+
+      const computed = await AnalyticsService.recompute(businessId, {
+        granularity,
+        metricKeys: body.metrics,
+      })
 
       return NextResponse.json({ ok: true, computed })
     } catch (error) {

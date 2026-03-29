@@ -15,18 +15,6 @@ export class DashboardService {
             },
           },
         }),
-
-        static async getManagerDashboard(businessId: string) {
-          const dashboard = await this.getDashboard(businessId)
-
-          return {
-            expenses: dashboard.expenses,
-            lowStock: dashboard.lowStock,
-            profit: dashboard.profit,
-            recentTransactions: dashboard.recentTransactions,
-            revenue: dashboard.revenue,
-          }
-        }
         prisma.product.findMany({
           where: { businessId },
           orderBy: [{ stock: "asc" }, { updatedAt: "desc" }],
@@ -87,6 +75,18 @@ export class DashboardService {
           topProducts.find((entry) => entry.productId === product.id)?._sum
             .quantity ?? 0,
       })),
+    }
+  }
+
+  static async getManagerDashboard(businessId: string) {
+    const dashboard = await this.getDashboard(businessId)
+
+    return {
+      expenses: dashboard.expenses,
+      lowStock: dashboard.lowStock,
+      profit: dashboard.profit,
+      recentTransactions: dashboard.recentTransactions,
+      revenue: dashboard.revenue,
     }
   }
 }

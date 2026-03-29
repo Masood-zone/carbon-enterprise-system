@@ -33,6 +33,8 @@ enum ForecastGranularity {
   DAILY
   WEEKLY
   MONTHLY
+  QUARTERLY
+  YEARLY
 }
 
 enum ForecastStatus {

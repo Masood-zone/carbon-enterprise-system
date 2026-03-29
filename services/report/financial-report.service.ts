@@ -129,13 +129,7 @@ export class FinancialReportService {
 
     return {
       expenses,
-      series: mergeDaySeries(
-        sales.map((sale) => ({
-          amount: sale.totalAmount,
-          occurredAt: sale.soldAt,
-        })),
-        expenses
-      ),
+      series: mergeDaySeries(sales, expenses),
       sales,
     }
   }

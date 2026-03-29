@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import type { Prisma } from "../../generated/prisma/client"
 import {
   normalizeNumber,
   normalizeString,
@@ -88,6 +89,11 @@ export class BusinessService {
     businessId: string,
     input: BusinessSettingsInput
   ) {
+    const dashboardDefaults =
+      input.dashboardDefaults === undefined || input.dashboardDefaults === null
+        ? {}
+        : input.dashboardDefaults
+
     return prisma.$transaction(async (transaction) => {
       const business = await transaction.business.findUnique({
         where: { id: businessId },
@@ -104,7 +110,7 @@ export class BusinessService {
           adaptiveInsightsEnabled: input.adaptiveInsightsEnabled ?? true,
           analyticsWindowDays: input.analyticsWindowDays ?? 90,
           autoReorderEnabled: input.autoReorderEnabled ?? false,
-          dashboardDefaults: input.dashboardDefaults ?? {},
+          dashboardDefaults,
           lowStockThreshold: input.lowStockThreshold ?? 10,
           overstockAlertThreshold: input.overstockAlertThreshold ?? 90,
           reorderReviewIntervalDays: input.reorderReviewIntervalDays ?? 7,
@@ -130,7 +136,9 @@ export class BusinessService {
             ? { autoReorderEnabled: input.autoReorderEnabled }
             : {}),
           ...(input.dashboardDefaults !== undefined
-            ? { dashboardDefaults: input.dashboardDefaults }
+            ? {
+                dashboardDefaults: dashboardDefaults as Prisma.InputJsonValue,
+              }
             : {}),
           ...(input.lowStockThreshold !== undefined
             ? {
