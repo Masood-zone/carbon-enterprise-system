@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server"
 
 import { AnalyticsService } from "@/services/analytics/analytics.service"
-import { apiErrorResponse, withAdmin } from "@/services/shared/admin-guards"
+import { apiErrorResponse, withManager } from "@/services/shared/admin-guards"
 
 export async function GET(
   request: Request,
   context: { params: Promise<{ metric: string }> }
 ) {
-  return withAdmin(request, async ({ businessId }) => {
+  return withManager(request, async ({ businessId }) => {
     const { metric } = await context.params
     const analytics = await AnalyticsService.getMetric(businessId, metric)
 

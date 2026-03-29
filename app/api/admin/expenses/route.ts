@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { ExpenseService } from "@/services/expense/expense.service"
-import { apiErrorResponse, withAdmin } from "@/services/shared/admin-guards"
+import { apiErrorResponse, withManager } from "@/services/shared/admin-guards"
 import { getErrorMessage } from "@/services/shared/error.service"
 import {
   normalizeNumber,
@@ -10,7 +10,7 @@ import {
 } from "@/services/shared/validation.service"
 
 export async function GET(request: Request) {
-  return withAdmin(request, async ({ businessId }) => {
+  return withManager(request, async ({ businessId }) => {
     const url = new URL(request.url)
     const expenses = await ExpenseService.listByBusiness(businessId, {
       endDate: url.searchParams.get("endDate") || undefined,
@@ -22,7 +22,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  return withAdmin(request, async ({ businessId }) => {
+  return withManager(request, async ({ businessId }) => {
     try {
       const body = (await request.json()) as Record<string, unknown>
 

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { ExpenseService } from "@/services/expense/expense.service"
-import { apiErrorResponse, withAdmin } from "@/services/shared/admin-guards"
+import { apiErrorResponse, withManager } from "@/services/shared/admin-guards"
 import { getErrorMessage } from "@/services/shared/error.service"
 import {
   normalizeOptionalNumber,
@@ -12,7 +12,7 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
-  return withAdmin(request, async ({ businessId }) => {
+  return withManager(request, async ({ businessId }) => {
     try {
       const { id } = await context.params
       const body = (await request.json()) as Record<string, unknown>
@@ -42,7 +42,7 @@ export async function DELETE(
   request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
-  return withAdmin(request, async ({ businessId }) => {
+  return withManager(request, async ({ businessId }) => {
     try {
       const { id } = await context.params
       const result = await ExpenseService.delete(businessId, id)

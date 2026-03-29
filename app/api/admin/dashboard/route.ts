@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server"
 
 import { DashboardService } from "@/services/dashboard/dashboard.service"
-import { withAdmin } from "@/services/shared/admin-guards"
+import { withManager } from "@/services/shared/admin-guards"
 
 export async function GET(request: Request) {
-  return withAdmin(request, async ({ businessId }) => {
-    const dashboard = await DashboardService.getDashboard(businessId)
+  return withManager(request, async ({ businessId, session }) => {
+    const dashboard =
+      session.user.role?.toUpperCase() === "ADMIN"
+        ? await DashboardService.getDashboard(businessId)
+        : await DashboardService.getManagerDashboard(businessId)
+
     return NextResponse.json({ ok: true, dashboard })
   })
 }

@@ -9,6 +9,12 @@ export const auth = betterAuth({
   }),
   user: {
     additionalFields: {
+      businessId: {
+        type: "string",
+        required: false,
+        input: false,
+        returned: true,
+      },
       role: {
         type: ["ADMIN", "MANAGER"],
         required: false,

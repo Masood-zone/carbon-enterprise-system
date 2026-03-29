@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { CustomerService } from "@/services/customer/customer.service"
-import { apiErrorResponse, withAdmin } from "@/services/shared/admin-guards"
+import { apiErrorResponse, withManager } from "@/services/shared/admin-guards"
 import { getErrorMessage } from "@/services/shared/error.service"
 import { normalizeOptionalString } from "@/services/shared/validation.service"
 
@@ -9,7 +9,7 @@ export async function GET(
   request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
-  return withAdmin(request, async ({ businessId }) => {
+  return withManager(request, async ({ businessId }) => {
     const { id } = await context.params
     const customer = await CustomerService.getById(businessId, id)
 
@@ -25,7 +25,7 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
-  return withAdmin(request, async ({ businessId }) => {
+  return withManager(request, async ({ businessId }) => {
     try {
       const { id } = await context.params
       const body = (await request.json()) as Record<string, unknown>
@@ -56,7 +56,7 @@ export async function DELETE(
   request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
-  return withAdmin(request, async ({ businessId }) => {
+  return withManager(request, async ({ businessId }) => {
     try {
       const { id } = await context.params
       const result = await CustomerService.delete(businessId, id)

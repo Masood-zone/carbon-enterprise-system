@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { ProductService } from "@/services/product/product.service"
-import { apiErrorResponse, withAdmin } from "@/services/shared/admin-guards"
+import { apiErrorResponse, withManager } from "@/services/shared/admin-guards"
 import { getErrorMessage } from "@/services/shared/error.service"
 import {
   normalizeNumber,
@@ -11,14 +11,14 @@ import {
 } from "@/services/shared/validation.service"
 
 export async function GET(request: Request) {
-  return withAdmin(request, async ({ businessId }) => {
+  return withManager(request, async ({ businessId }) => {
     const products = await ProductService.listByBusiness(businessId)
     return NextResponse.json({ ok: true, products })
   })
 }
 
 export async function POST(request: Request) {
-  return withAdmin(request, async ({ businessId }) => {
+  return withManager(request, async ({ businessId }) => {
     try {
       const body = (await request.json()) as Record<string, unknown>
 

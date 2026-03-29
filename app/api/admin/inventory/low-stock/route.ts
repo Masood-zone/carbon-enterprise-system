@@ -2,11 +2,11 @@ import { NextResponse } from "next/server"
 
 import { BusinessService } from "@/services/business/business.service"
 import { InventoryService } from "@/services/product/inventory.service"
-import { apiErrorResponse, withAdmin } from "@/services/shared/admin-guards"
+import { withManager } from "@/services/shared/admin-guards"
 import { normalizeOptionalNumber } from "@/services/shared/validation.service"
 
 export async function GET(request: Request) {
-  return withAdmin(request, async ({ businessId }) => {
+  return withManager(request, async ({ businessId }) => {
     const url = new URL(request.url)
     const settings = await BusinessService.getSettings(businessId)
     const threshold =

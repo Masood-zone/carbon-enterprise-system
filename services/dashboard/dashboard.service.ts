@@ -15,6 +15,18 @@ export class DashboardService {
             },
           },
         }),
+
+        static async getManagerDashboard(businessId: string) {
+          const dashboard = await this.getDashboard(businessId)
+
+          return {
+            expenses: dashboard.expenses,
+            lowStock: dashboard.lowStock,
+            profit: dashboard.profit,
+            recentTransactions: dashboard.recentTransactions,
+            revenue: dashboard.revenue,
+          }
+        }
         prisma.product.findMany({
           where: { businessId },
           orderBy: [{ stock: "asc" }, { updatedAt: "desc" }],
