@@ -42,8 +42,12 @@ export function useUpdateAdminBusinessMutation() {
       return response.data
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: businessQueryKeys.profile })
-      await queryClient.invalidateQueries({ queryKey: businessQueryKeys.settings })
+      await queryClient.invalidateQueries({
+        queryKey: businessQueryKeys.profile,
+      })
+      await queryClient.invalidateQueries({
+        queryKey: businessQueryKeys.settings,
+      })
     },
     onError: (error) => {
       toast.error(getAxiosErrorMessage(error))
@@ -60,8 +64,12 @@ export function useUpdateAdminBusinessSettingsMutation() {
       return response.data
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: businessQueryKeys.profile })
-      await queryClient.invalidateQueries({ queryKey: businessQueryKeys.settings })
+      await queryClient.invalidateQueries({
+        queryKey: businessQueryKeys.profile,
+      })
+      await queryClient.invalidateQueries({
+        queryKey: businessQueryKeys.settings,
+      })
     },
     onError: (error) => {
       toast.error(getAxiosErrorMessage(error))

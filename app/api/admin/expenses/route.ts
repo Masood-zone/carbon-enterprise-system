@@ -26,7 +26,11 @@ export async function POST(request: Request) {
     try {
       const body = (await request.json()) as Record<string, unknown>
 
-      if (!normalizeString(body.title) || !normalizeString(body.category) || body.amount === undefined) {
+      if (
+        !normalizeString(body.title) ||
+        !normalizeString(body.category) ||
+        body.amount === undefined
+      ) {
         return apiErrorResponse("Title, category, and amount are required", 400)
       }
 

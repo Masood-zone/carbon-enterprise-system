@@ -2,34 +2,37 @@ import { prisma } from "@/lib/prisma"
 
 export class DashboardService {
   static async getDashboard(businessId: string) {
-    const [transactions, products, expenseAggregate, revenueAggregate] = await Promise.all([
-      prisma.transaction.findMany({
-        where: { businessId },
-        orderBy: { soldAt: "desc" },
-        take: 10,
-        include: {
-          customer: true,
-          items: {
-            include: { product: true },
+    const [transactions, products, expenseAggregate, revenueAggregate] =
+      await Promise.all([
+        prisma.transaction.findMany({
+          where: { businessId },
+          orderBy: { soldAt: "desc" },
+          take: 10,
+          include: {
+            customer: true,
+            items: {
+              include: { product: true },
+            },
           },
-        },
-      }),
-      prisma.product.findMany({
-        where: { businessId },
-        orderBy: [{ stock: "asc" }, { updatedAt: "desc" }],
-        take: 10,
-      }),
-      prisma.expense.aggregate({
-        where: { businessId },
-        _sum: { amount: true },
-      }),
-      prisma.transaction.aggregate({
-        where: { businessId },
-        _sum: { totalAmount: true },
-      }),
-    ])
+        }),
+        prisma.product.findMany({
+          where: { businessId },
+          orderBy: [{ stock: "asc" }, { updatedAt: "desc" }],
+          take: 10,
+        }),
+        prisma.expense.aggregate({
+          where: { businessId },
+          _sum: { amount: true },
+        }),
+        prisma.transaction.aggregate({
+          where: { businessId },
+          _sum: { totalAmount: true },
+        }),
+      ])
 
-    const lowStock = products.filter((product) => product.stock < product.reorderPoint)
+    const lowStock = products.filter(
+      (product) => product.stock < product.reorderPoint
+    )
     const topProducts = await prisma.transactionItem.groupBy({
       by: ["productId"],
       where: {
@@ -61,12 +64,16 @@ export class DashboardService {
     return {
       expenses: expenseAggregate._sum.amount ?? 0,
       lowStock,
-      profit: (revenueAggregate._sum.totalAmount ?? 0) - (expenseAggregate._sum.amount ?? 0),
+      profit:
+        (revenueAggregate._sum.totalAmount ?? 0) -
+        (expenseAggregate._sum.amount ?? 0),
       recentTransactions: transactions,
       revenue: revenueAggregate._sum.totalAmount ?? 0,
       topProducts: topProductDetails.map((product) => ({
         ...product,
-        soldQuantity: topProducts.find((entry) => entry.productId === product.id)?._sum.quantity ?? 0,
+        soldQuantity:
+          topProducts.find((entry) => entry.productId === product.id)?._sum
+            .quantity ?? 0,
       })),
     }
   }

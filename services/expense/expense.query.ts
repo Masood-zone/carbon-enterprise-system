@@ -3,7 +3,11 @@ import { toast } from "sonner"
 
 import { api, getAxiosErrorMessage } from "@/services/api/axios"
 
-import type { ExpenseFilters, ExpenseInput, ExpenseUpdateInput } from "./expense.service"
+import type {
+  ExpenseFilters,
+  ExpenseInput,
+  ExpenseUpdateInput,
+} from "./expense.service"
 
 const expenseQueryKeys = {
   all: ["admin", "expenses"] as const,
@@ -63,12 +67,17 @@ export function useUpdateAdminExpenseMutation(expenseId: string) {
 
   return useMutation({
     mutationFn: async (input: ExpenseUpdateInput) => {
-      const response = await api.patch(`/api/admin/expenses/${expenseId}`, input)
+      const response = await api.patch(
+        `/api/admin/expenses/${expenseId}`,
+        input
+      )
       return response.data
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: expenseQueryKeys.all })
-      await queryClient.invalidateQueries({ queryKey: expenseQueryKeys.detail(expenseId) })
+      await queryClient.invalidateQueries({
+        queryKey: expenseQueryKeys.detail(expenseId),
+      })
     },
     onError: (error) => {
       toast.error(getAxiosErrorMessage(error))

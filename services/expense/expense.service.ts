@@ -23,7 +23,10 @@ export type ExpenseFilters = {
 }
 
 export class ExpenseService {
-  static async listByBusiness(businessId: string, filters: ExpenseFilters = {}) {
+  static async listByBusiness(
+    businessId: string,
+    filters: ExpenseFilters = {}
+  ) {
     const startDate = normalizeDate(filters.startDate)
     const endDate = normalizeDate(filters.endDate)
 
@@ -73,14 +76,18 @@ export class ExpenseService {
     return prisma.expense.updateMany({
       where: { id: expenseId, businessId },
       data: {
-        ...(input.amount !== undefined ? { amount: normalizeNumber(input.amount) } : {}),
+        ...(input.amount !== undefined
+          ? { amount: normalizeNumber(input.amount) }
+          : {}),
         ...(input.category !== undefined
           ? { category: normalizeString(input.category) }
           : {}),
         ...(input.notes !== undefined
           ? { notes: normalizeOptionalString(input.notes) }
           : {}),
-        ...(input.title !== undefined ? { title: normalizeString(input.title) } : {}),
+        ...(input.title !== undefined
+          ? { title: normalizeString(input.title) }
+          : {}),
         ...(input.vendorName !== undefined
           ? { vendorName: normalizeOptionalString(input.vendorName) }
           : {}),

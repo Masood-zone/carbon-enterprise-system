@@ -74,8 +74,12 @@ export function useCreateAdminProductMutation() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: productQueryKeys.all })
-      await queryClient.invalidateQueries({ queryKey: productQueryKeys.inventory })
-      await queryClient.invalidateQueries({ queryKey: productQueryKeys.lowStock })
+      await queryClient.invalidateQueries({
+        queryKey: productQueryKeys.inventory,
+      })
+      await queryClient.invalidateQueries({
+        queryKey: productQueryKeys.lowStock,
+      })
     },
     onError: (error) => {
       toast.error(getAxiosErrorMessage(error))
@@ -88,14 +92,23 @@ export function useUpdateAdminProductMutation(productId: string) {
 
   return useMutation({
     mutationFn: async (input: ProductUpdateInput) => {
-      const response = await api.patch(`/api/admin/products/${productId}`, input)
+      const response = await api.patch(
+        `/api/admin/products/${productId}`,
+        input
+      )
       return response.data
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: productQueryKeys.all })
-      await queryClient.invalidateQueries({ queryKey: productQueryKeys.inventory })
-      await queryClient.invalidateQueries({ queryKey: productQueryKeys.lowStock })
-      await queryClient.invalidateQueries({ queryKey: productQueryKeys.detail(productId) })
+      await queryClient.invalidateQueries({
+        queryKey: productQueryKeys.inventory,
+      })
+      await queryClient.invalidateQueries({
+        queryKey: productQueryKeys.lowStock,
+      })
+      await queryClient.invalidateQueries({
+        queryKey: productQueryKeys.detail(productId),
+      })
     },
     onError: (error) => {
       toast.error(getAxiosErrorMessage(error))
@@ -113,7 +126,9 @@ export function useDeleteAdminProductMutation() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: productQueryKeys.all })
-      await queryClient.invalidateQueries({ queryKey: productQueryKeys.inventory })
+      await queryClient.invalidateQueries({
+        queryKey: productQueryKeys.inventory,
+      })
     },
     onError: (error) => {
       toast.error(getAxiosErrorMessage(error))

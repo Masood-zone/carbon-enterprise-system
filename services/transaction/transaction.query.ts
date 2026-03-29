@@ -26,7 +26,9 @@ export function useAdminTransactionsQuery(filters: TransactionFilters = {}) {
     queryKey: [...transactionQueryKeys.all, filters],
     queryFn: async () => {
       const params = buildTransactionParams(filters)
-      const response = await api.get(`/api/admin/transactions?${params.toString()}`)
+      const response = await api.get(
+        `/api/admin/transactions?${params.toString()}`
+      )
       return response.data
     },
   })
@@ -47,7 +49,9 @@ export function useAdminTransactionItemsQuery(transactionId: string) {
   return useQuery({
     queryKey: transactionQueryKeys.items(transactionId),
     queryFn: async () => {
-      const response = await api.get(`/api/admin/transaction-items/${transactionId}`)
+      const response = await api.get(
+        `/api/admin/transaction-items/${transactionId}`
+      )
       return response.data
     },
     enabled: Boolean(transactionId),

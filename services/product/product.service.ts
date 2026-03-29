@@ -104,8 +104,12 @@ export class ProductService {
                   : normalizeNumber(input.leadTimeDays),
             }
           : {}),
-        ...(input.name !== undefined ? { name: normalizeString(input.name) } : {}),
-        ...(input.price !== undefined ? { price: normalizeNumber(input.price) } : {}),
+        ...(input.name !== undefined
+          ? { name: normalizeString(input.name) }
+          : {}),
+        ...(input.price !== undefined
+          ? { price: normalizeNumber(input.price) }
+          : {}),
         ...(input.reorderPoint !== undefined
           ? { reorderPoint: normalizeNumber(input.reorderPoint) }
           : {}),
@@ -120,8 +124,12 @@ export class ProductService {
         ...(input.safetyStock !== undefined
           ? { safetyStock: normalizeNumber(input.safetyStock) }
           : {}),
-        ...(input.sku !== undefined ? { sku: normalizeOptionalString(input.sku) } : {}),
-        ...(input.stock !== undefined ? { stock: normalizeNumber(input.stock) } : {}),
+        ...(input.sku !== undefined
+          ? { sku: normalizeOptionalString(input.sku) }
+          : {}),
+        ...(input.stock !== undefined
+          ? { stock: normalizeNumber(input.stock) }
+          : {}),
         ...(input.unitOfMeasure !== undefined
           ? { unitOfMeasure: normalizeOptionalString(input.unitOfMeasure) }
           : {}),

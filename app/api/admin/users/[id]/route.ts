@@ -31,13 +31,21 @@ export async function PATCH(
       const body = (await request.json()) as Record<string, unknown>
 
       if (session.user.id === id) {
-        return apiErrorResponse("You cannot update your own admin account here", 400)
+        return apiErrorResponse(
+          "You cannot update your own admin account here",
+          400
+        )
       }
 
       const result = await UserService.updateUser(businessId, id, {
         email: normalizeOptionalString(body.email),
         name: normalizeOptionalString(body.name),
-        role: body.role === "ADMIN" ? "ADMIN" : body.role === "MANAGER" ? "MANAGER" : undefined,
+        role:
+          body.role === "ADMIN"
+            ? "ADMIN"
+            : body.role === "MANAGER"
+              ? "MANAGER"
+              : undefined,
       })
 
       if (!result.count) {

@@ -38,11 +38,15 @@ export async function PATCH(request: Request) {
         dashboardDefaults: body.dashboardDefaults,
         lowStockThreshold: normalizeOptionalNumber(body.lowStockThreshold),
         notificationPreferences: body.notificationPreferences,
-        overstockAlertThreshold: normalizeOptionalNumber(body.overstockAlertThreshold),
+        overstockAlertThreshold: normalizeOptionalNumber(
+          body.overstockAlertThreshold
+        ),
         reorderReviewIntervalDays: normalizeOptionalNumber(
           body.reorderReviewIntervalDays
         ),
-        stockoutAlertThreshold: normalizeOptionalNumber(body.stockoutAlertThreshold),
+        stockoutAlertThreshold: normalizeOptionalNumber(
+          body.stockoutAlertThreshold
+        ),
       })
 
       return NextResponse.json({ ok: true, ...result })

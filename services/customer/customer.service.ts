@@ -65,7 +65,9 @@ export class CustomerService {
         ...(input.email !== undefined
           ? { email: normalizeOptionalString(input.email)?.toLowerCase() }
           : {}),
-        ...(input.name !== undefined ? { name: normalizeString(input.name) } : {}),
+        ...(input.name !== undefined
+          ? { name: normalizeString(input.name) }
+          : {}),
         ...(input.notes !== undefined
           ? { notes: normalizeOptionalString(input.notes) }
           : {}),

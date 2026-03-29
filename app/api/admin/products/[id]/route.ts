@@ -37,15 +37,25 @@ export async function PATCH(
       const result = await ProductService.update(businessId, id, {
         barcode: normalizeOptionalString(body.barcode),
         category: normalizeOptionalString(body.category),
-        costPrice: body.costPrice === null ? null : normalizeOptionalNumber(body.costPrice),
+        costPrice:
+          body.costPrice === null
+            ? null
+            : normalizeOptionalNumber(body.costPrice),
         description: normalizeOptionalString(body.description),
         isActive:
           typeof body.isActive === "boolean" ? body.isActive : undefined,
-        leadTimeDays: body.leadTimeDays === null ? null : normalizeOptionalNumber(body.leadTimeDays),
+        leadTimeDays:
+          body.leadTimeDays === null
+            ? null
+            : normalizeOptionalNumber(body.leadTimeDays),
         name: normalizeOptionalString(body.name),
-        price: body.price !== undefined ? normalizeNumber(body.price) : undefined,
+        price:
+          body.price !== undefined ? normalizeNumber(body.price) : undefined,
         reorderPoint: normalizeOptionalNumber(body.reorderPoint),
-        reorderQuantity: body.reorderQuantity === null ? null : normalizeOptionalNumber(body.reorderQuantity),
+        reorderQuantity:
+          body.reorderQuantity === null
+            ? null
+            : normalizeOptionalNumber(body.reorderQuantity),
         safetyStock: normalizeOptionalNumber(body.safetyStock),
         sku: normalizeOptionalString(body.sku),
         stock: normalizeOptionalNumber(body.stock),

@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server"
 
-import { AnalyticsService, type AnalyticsMetricKey } from "@/services/analytics/analytics.service"
+import {
+  AnalyticsService,
+  type AnalyticsMetricKey,
+} from "@/services/analytics/analytics.service"
 import { apiErrorResponse, withAdmin } from "@/services/shared/admin-guards"
 
 export async function POST(request: Request) {
@@ -10,11 +13,15 @@ export async function POST(request: Request) {
         metrics?: AnalyticsMetricKey[]
       }
 
-      const computed = await AnalyticsService.recompute(businessId, body.metrics)
+      const computed = await AnalyticsService.recompute(
+        businessId,
+        body.metrics
+      )
 
       return NextResponse.json({ ok: true, computed })
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Analytics recompute failed"
+      const message =
+        error instanceof Error ? error.message : "Analytics recompute failed"
       return apiErrorResponse(message, 500)
     }
   })

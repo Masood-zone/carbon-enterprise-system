@@ -3,7 +3,10 @@ import { NextResponse } from "next/server"
 import { CustomerService } from "@/services/customer/customer.service"
 import { apiErrorResponse, withAdmin } from "@/services/shared/admin-guards"
 import { getErrorMessage } from "@/services/shared/error.service"
-import { normalizeOptionalString, normalizeString } from "@/services/shared/validation.service"
+import {
+  normalizeOptionalString,
+  normalizeString,
+} from "@/services/shared/validation.service"
 
 export async function GET(request: Request) {
   return withAdmin(request, async ({ businessId }) => {

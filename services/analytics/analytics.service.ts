@@ -23,8 +23,14 @@ export class AnalyticsService {
     })
   }
 
-  static async recompute(businessId: string, metricKeys?: AnalyticsMetricKey[]) {
-    const keys = metricKeys && metricKeys.length ? metricKeys : ["revenue", "profit", "inventory_turnover"]
+  static async recompute(
+    businessId: string,
+    metricKeys?: AnalyticsMetricKey[]
+  ) {
+    const keys =
+      metricKeys && metricKeys.length
+        ? metricKeys
+        : ["revenue", "profit", "inventory_turnover"]
     const now = new Date()
 
     const computedMetrics = await Promise.all(
@@ -44,10 +50,12 @@ export class AnalyticsService {
         }
 
         if (metricKey === "demand_forecast") {
-          value = await prisma.demandForecast.aggregate({
-            where: { businessId },
-            _sum: { predictedDemand: true },
-          }).then((aggregate) => aggregate._sum.predictedDemand ?? 0)
+          value = await prisma.demandForecast
+            .aggregate({
+              where: { businessId },
+              _sum: { predictedDemand: true },
+            })
+            .then((aggregate) => aggregate._sum.predictedDemand ?? 0)
         }
 
         return prisma.analyticsCache.upsert({

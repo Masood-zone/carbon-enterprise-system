@@ -2,10 +2,7 @@ import { NextResponse } from "next/server"
 
 import { BusinessService } from "@/services/business/business.service"
 import { getErrorMessage } from "@/services/shared/error.service"
-import {
-  apiErrorResponse,
-  withAdmin,
-} from "@/services/shared/admin-guards"
+import { apiErrorResponse, withAdmin } from "@/services/shared/admin-guards"
 import {
   normalizeNumber,
   normalizeOptionalString,

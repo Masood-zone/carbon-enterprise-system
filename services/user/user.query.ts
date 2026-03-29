@@ -58,7 +58,9 @@ export function useUpdateAdminUserMutation(userId: string) {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: userQueryKeys.all })
-      await queryClient.invalidateQueries({ queryKey: userQueryKeys.detail(userId) })
+      await queryClient.invalidateQueries({
+        queryKey: userQueryKeys.detail(userId),
+      })
     },
     onError: (error) => {
       toast.error(getAxiosErrorMessage(error))

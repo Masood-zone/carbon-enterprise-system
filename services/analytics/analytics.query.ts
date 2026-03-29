@@ -36,7 +36,10 @@ export function useRecomputeAdminAnalyticsMutation() {
 
   return useMutation({
     mutationFn: async (input?: { metrics?: AnalyticsMetricKey[] }) => {
-      const response = await api.post("/api/admin/analytics/recompute", input ?? {})
+      const response = await api.post(
+        "/api/admin/analytics/recompute",
+        input ?? {}
+      )
       return response.data
     },
     onSuccess: async () => {

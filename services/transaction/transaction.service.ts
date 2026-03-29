@@ -9,7 +9,10 @@ export type TransactionFilters = {
 }
 
 export class TransactionService {
-  static async listByBusiness(businessId: string, filters: TransactionFilters = {}) {
+  static async listByBusiness(
+    businessId: string,
+    filters: TransactionFilters = {}
+  ) {
     const startDate = normalizeDate(filters.startDate)
     const endDate = normalizeDate(filters.endDate)
 

@@ -29,16 +29,25 @@ export async function POST(request: Request) {
       const product = await ProductService.create(businessId, {
         barcode: normalizeOptionalString(body.barcode),
         category: normalizeOptionalString(body.category),
-        costPrice: body.costPrice === null ? null : normalizeOptionalNumber(body.costPrice),
+        costPrice:
+          body.costPrice === null
+            ? null
+            : normalizeOptionalNumber(body.costPrice),
         description: normalizeOptionalString(body.description),
         isActive:
           typeof body.isActive === "boolean" ? body.isActive : undefined,
-        leadTimeDays: body.leadTimeDays === null ? null : normalizeOptionalNumber(body.leadTimeDays),
+        leadTimeDays:
+          body.leadTimeDays === null
+            ? null
+            : normalizeOptionalNumber(body.leadTimeDays),
         name: normalizeString(body.name),
         price: normalizeNumber(body.price),
         quantity: normalizeOptionalNumber(body.quantity),
         reorderPoint: normalizeOptionalNumber(body.reorderPoint),
-        reorderQuantity: body.reorderQuantity === null ? null : normalizeOptionalNumber(body.reorderQuantity),
+        reorderQuantity:
+          body.reorderQuantity === null
+            ? null
+            : normalizeOptionalNumber(body.reorderQuantity),
         safetyStock: normalizeOptionalNumber(body.safetyStock),
         sku: normalizeOptionalString(body.sku),
         stock: normalizeOptionalNumber(body.stock),

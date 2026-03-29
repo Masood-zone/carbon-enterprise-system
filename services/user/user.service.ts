@@ -107,7 +107,9 @@ export class UserService {
         ...(input.email !== undefined
           ? { email: normalizeString(input.email).toLowerCase() }
           : {}),
-        ...(input.name !== undefined ? { name: normalizeString(input.name) } : {}),
+        ...(input.name !== undefined
+          ? { name: normalizeString(input.name) }
+          : {}),
         ...(input.role !== undefined ? { role: input.role } : {}),
       },
     })

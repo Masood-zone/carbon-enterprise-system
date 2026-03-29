@@ -53,12 +53,17 @@ export function useUpdateAdminCustomerMutation(customerId: string) {
 
   return useMutation({
     mutationFn: async (input: CustomerUpdateInput) => {
-      const response = await api.patch(`/api/admin/customers/${customerId}`, input)
+      const response = await api.patch(
+        `/api/admin/customers/${customerId}`,
+        input
+      )
       return response.data
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: customerQueryKeys.all })
-      await queryClient.invalidateQueries({ queryKey: customerQueryKeys.detail(customerId) })
+      await queryClient.invalidateQueries({
+        queryKey: customerQueryKeys.detail(customerId),
+      })
     },
     onError: (error) => {
       toast.error(getAxiosErrorMessage(error))

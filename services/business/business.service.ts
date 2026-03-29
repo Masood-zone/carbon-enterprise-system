@@ -119,7 +119,12 @@ export class BusinessService {
             ? { adaptiveInsightsEnabled: input.adaptiveInsightsEnabled }
             : {}),
           ...(input.analyticsWindowDays !== undefined
-            ? { analyticsWindowDays: normalizeNumber(input.analyticsWindowDays, 90) }
+            ? {
+                analyticsWindowDays: normalizeNumber(
+                  input.analyticsWindowDays,
+                  90
+                ),
+              }
             : {}),
           ...(input.autoReorderEnabled !== undefined
             ? { autoReorderEnabled: input.autoReorderEnabled }
@@ -128,10 +133,17 @@ export class BusinessService {
             ? { dashboardDefaults: input.dashboardDefaults }
             : {}),
           ...(input.lowStockThreshold !== undefined
-            ? { lowStockThreshold: normalizeNumber(input.lowStockThreshold, 10) }
+            ? {
+                lowStockThreshold: normalizeNumber(input.lowStockThreshold, 10),
+              }
             : {}),
           ...(input.overstockAlertThreshold !== undefined
-            ? { overstockAlertThreshold: normalizeNumber(input.overstockAlertThreshold, 90) }
+            ? {
+                overstockAlertThreshold: normalizeNumber(
+                  input.overstockAlertThreshold,
+                  90
+                ),
+              }
             : {}),
           ...(input.reorderReviewIntervalDays !== undefined
             ? {
@@ -142,10 +154,19 @@ export class BusinessService {
               }
             : {}),
           ...(input.stockoutAlertThreshold !== undefined
-            ? { stockoutAlertThreshold: normalizeNumber(input.stockoutAlertThreshold, 3) }
+            ? {
+                stockoutAlertThreshold: normalizeNumber(
+                  input.stockoutAlertThreshold,
+                  3
+                ),
+              }
             : {}),
           ...(input.notificationPreferences !== undefined
-            ? { analyticsConfig: { notificationPreferences: input.notificationPreferences } }
+            ? {
+                analyticsConfig: {
+                  notificationPreferences: input.notificationPreferences,
+                },
+              }
             : {}),
         },
       })
