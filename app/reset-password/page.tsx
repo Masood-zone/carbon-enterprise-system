@@ -1,3 +1,5 @@
+import { Suspense } from "react"
+
 import { CarbonBrand } from "@/components/carbon-brand"
 import { ResetPasswordForm } from "./reset-password-form"
 
@@ -30,7 +32,17 @@ export default function ResetPasswordPage() {
               our enterprise standards.
             </p>
           </div>
-          <ResetPasswordForm />
+          <Suspense
+            fallback={
+              <div className="space-y-8">
+                <div className="h-24 animate-pulse border border-border bg-muted" />
+                <div className="h-24 animate-pulse border border-border bg-muted" />
+                <div className="h-16 animate-pulse border border-border bg-muted" />
+              </div>
+            }
+          >
+            <ResetPasswordForm />
+          </Suspense>
         </div>
       </div>
 
