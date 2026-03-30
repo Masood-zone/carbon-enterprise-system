@@ -1,11 +1,14 @@
 import Link from "next/link"
 
-import { ArrowRight, ShieldCheck } from "lucide-react"
+import { ShieldCheck } from "lucide-react"
 
 import { CarbonBrand } from "@/components/carbon-brand"
+import { ForgotPasswordForm } from "./forgot-password-form"
 
 export const metadata = {
   title: "Forgot Password",
+  description:
+    "Start the password recovery process by providing your enterprise email address. We will guide you through the steps to securely reset your password.",
 }
 
 export default function ForgotPasswordPage() {
@@ -27,7 +30,7 @@ export default function ForgotPasswordPage() {
 
       <div className="grid flex-1 lg:grid-cols-[1.08fr_0.92fr]">
         <section className="flex items-center justify-center px-6 py-12 sm:px-10 lg:px-16">
-          <div className="w-full max-w-[440px]">
+          <div className="w-full max-w-110">
             <nav className="flex items-center gap-4 text-xs font-semibold tracking-[0.28em] text-muted-foreground uppercase">
               <div className="flex items-center gap-2 text-primary">
                 <span className="flex h-6 w-6 items-center justify-center border border-primary text-[10px]">
@@ -78,40 +81,16 @@ export default function ForgotPasswordPage() {
               </div>
             </div>
 
-            <form className="mt-10 space-y-8">
-              <div className="space-y-2">
-                <label
-                  className="text-xs font-semibold tracking-[0.28em] text-foreground uppercase"
-                  htmlFor="enterprise-email"
-                >
-                  Enterprise Email
-                </label>
-                <input
-                  className="carbon-input"
-                  id="enterprise-email"
-                  name="enterprise-email"
-                  placeholder="e.g. j.doe@carbon-enterprise.com"
-                  type="email"
-                />
-              </div>
+            <ForgotPasswordForm />
 
-              <div className="space-y-4">
-                <button
-                  className="carbon-button-primary w-full justify-between px-6"
-                  type="submit"
-                >
-                  <span>Request OTP</span>
-                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </button>
-
-                <Link
-                  className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
-                  href="/login"
-                >
-                  Back to login
-                </Link>
-              </div>
-            </form>
+            <div className="mt-6">
+              <Link
+                className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+                href="/login"
+              >
+                Back to login
+              </Link>
+            </div>
 
             <div className="mt-8 border-t border-border pt-6 text-xs text-muted-foreground">
               <p>
