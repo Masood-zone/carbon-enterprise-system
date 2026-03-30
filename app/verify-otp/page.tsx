@@ -2,9 +2,9 @@ import { CarbonBrand } from "@/components/carbon-brand"
 import { VerifyOtpCard } from "./verify-otp-card"
 
 export const metadata = {
-  title: "Verify OTP",
+  title: "Check Inbox",
   description:
-    "Enter the One-Time Password (OTP) sent to your email to verify your identity and proceed with resetting your password.",
+    "Check your email for the Carbon password reset link and use it to continue resetting your password.",
 }
 
 export default function VerifyOtpPage() {
@@ -20,8 +20,8 @@ export default function VerifyOtpPage() {
           <VerifyOtpCard />
 
           <p className="mx-auto mt-8 max-w-sm text-center text-[13px] leading-relaxed text-muted-foreground">
-            Trouble receiving the code? Check your spam folder or contact system
-            support.
+            Trouble receiving the email? Check your spam folder or contact
+            system support.
           </p>
         </div>
       </div>

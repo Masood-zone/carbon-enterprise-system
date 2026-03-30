@@ -1,23 +1,20 @@
 "use client"
 
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useEffect, useMemo, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 
 import { ArrowLeft, ArrowRight, Check, Circle, Eye, EyeOff } from "lucide-react"
 
 import { getAxiosErrorMessage } from "@/services/api/axios"
-import { resetPasswordWithOtp } from "@/services/auth/password-reset.service"
+import { resetPasswordWithToken } from "@/services/auth/password-reset.service"
 
 type ResetPasswordFormValues = {
   password: string
   confirmPassword: string
 }
-
-const STORAGE_EMAIL_KEY = "carbon.passwordReset.email"
-const STORAGE_OTP_KEY = "carbon.passwordReset.otp"
 
 const requirements = [
   { label: "Minimum 12 characters", met: true },
@@ -27,38 +24,23 @@ const requirements = [
 
 export function ResetPasswordForm() {
   const router = useRouter()
-  const [email, setEmail] = useState<string>("")
-  const [otp, setOtp] = useState<string>("")
+  const searchParams = useSearchParams()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm<ResetPasswordFormValues>()
 
+  const token = searchParams.get("token")?.trim() ?? ""
+
   useEffect(() => {
-    const storedEmail = sessionStorage.getItem(STORAGE_EMAIL_KEY)
-    const storedOtp = sessionStorage.getItem(STORAGE_OTP_KEY)
-
-    if (!storedEmail?.trim() || !storedOtp?.trim()) {
+    if (!token) {
       router.replace("/forgot-password")
-      return
     }
-
-    setEmail(storedEmail)
-    setOtp(storedOtp)
-  }, [router])
-
-  const password = watch("password")
-  const confirmPassword = watch("confirmPassword")
-
-  const passwordsMatch = useMemo(() => {
-    if (!password || !confirmPassword) return false
-    return password === confirmPassword
-  }, [password, confirmPassword])
+  }, [router, token])
 
   const onSubmit = async (values: ResetPasswordFormValues) => {
     if (values.password !== values.confirmPassword) {
@@ -66,15 +48,16 @@ export function ResetPasswordForm() {
       return
     }
 
+    if (!token) {
+      toast.error("Missing reset token")
+      return
+    }
+
     try {
-      await resetPasswordWithOtp({
-        email,
-        otp,
+      await resetPasswordWithToken({
+        token,
         password: values.password,
       })
-
-      sessionStorage.removeItem(STORAGE_EMAIL_KEY)
-      sessionStorage.removeItem(STORAGE_OTP_KEY)
 
       toast.success("Password updated. You can sign in now.")
       router.push("/login")
@@ -176,11 +159,6 @@ export function ResetPasswordForm() {
                 <Eye className="h-4 w-4" aria-hidden="true" />
               )}
             </button>
-            {passwordsMatch ? (
-              <div className="absolute top-1/2 right-12 -translate-y-1/2 text-green-700">
-                <Check className="h-4 w-4" aria-hidden="true" />
-              </div>
-            ) : null}
           </div>
           {errors.confirmPassword ? (
             <p className="text-xs font-medium text-destructive">
@@ -220,7 +198,7 @@ export function ResetPasswordForm() {
         <button
           className="carbon-button-primary w-full justify-between px-6 disabled:cursor-not-allowed disabled:opacity-70"
           type="submit"
-          disabled={isSubmitting || !email || !otp}
+          disabled={isSubmitting || !token}
         >
           <span className="text-sm tracking-[0.28em] uppercase">
             {isSubmitting ? "Updating..." : "Update password"}

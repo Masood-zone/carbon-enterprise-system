@@ -7,7 +7,7 @@ import { toast } from "sonner"
 import { ArrowRight } from "lucide-react"
 
 import { getAxiosErrorMessage } from "@/services/api/axios"
-import { requestPasswordResetOtp } from "@/services/auth/password-reset.service"
+import { requestPasswordReset } from "@/services/auth/password-reset.service"
 
 type ForgotPasswordFormValues = {
   email: string
@@ -26,15 +26,14 @@ export function ForgotPasswordForm() {
 
   const onSubmit = async (values: ForgotPasswordFormValues) => {
     try {
-      await requestPasswordResetOtp(values.email)
+      await requestPasswordReset(values.email)
 
       sessionStorage.setItem(
         STORAGE_EMAIL_KEY,
         values.email.trim().toLowerCase()
       )
-      sessionStorage.removeItem("carbon.passwordReset.otp")
 
-      toast.success("We’ve sent a 6-digit code.")
+      toast.success("We’ve sent a password reset email.")
       router.push("/verify-otp")
     } catch (error) {
       toast.error(getAxiosErrorMessage(error))
@@ -73,7 +72,7 @@ export function ForgotPasswordForm() {
           type="submit"
           disabled={isSubmitting}
         >
-          <span>{isSubmitting ? "Requesting..." : "Request OTP"}</span>
+          <span>{isSubmitting ? "Requesting..." : "Send reset email"}</span>
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </button>
       </div>

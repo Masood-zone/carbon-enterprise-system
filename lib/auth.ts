@@ -4,6 +4,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma"
 import { prisma } from "./prisma"
 import { emailService, getAppName, getAppUrl } from "./email-service"
 import { buildOtpEmail, buildPasswordResetSuccessEmail } from "./otp-emails"
+import { buildPasswordResetRequestEmail } from "./password-reset-email"
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -32,6 +33,26 @@ export const auth = betterAuth({
     requireEmailVerification: false,
     resetPasswordTokenExpiresIn: 15 * 60,
     revokeSessionsOnPasswordReset: true,
+    async sendResetPassword({ user, url }) {
+      const appName = getAppName()
+      const appUrl = getAppUrl()
+
+      const message = buildPasswordResetRequestEmail({
+        appName,
+        appUrl,
+        email: user.email,
+        recipientName: user.name,
+        resetUrl: url,
+        expiresInMinutes: 15,
+      })
+
+      await emailService.sendEmail({
+        to: user.email,
+        subject: message.subject,
+        html: message.html,
+        text: message.text,
+      })
+    },
     async onPasswordReset({ user }) {
       const appName = getAppName()
       const appUrl = getAppUrl()

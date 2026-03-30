@@ -4,39 +4,30 @@ import { toast } from "sonner"
 import { getAxiosErrorMessage } from "@/services/api/axios"
 
 import {
-  requestPasswordResetOtp,
-  resetPasswordWithOtp,
-  verifyPasswordResetOtp,
+  requestPasswordReset,
+  resetPasswordWithToken,
 } from "./password-reset.service"
 
-export function useRequestPasswordResetOtpMutation() {
+export function useRequestPasswordResetMutation() {
   return useMutation({
-    mutationFn: async (email: string) => requestPasswordResetOtp(email),
+    mutationFn: async (email: string) => requestPasswordReset(email),
     onError: (error) => {
       toast.error(getAxiosErrorMessage(error))
     },
   })
 }
 
-export function useVerifyPasswordResetOtpMutation() {
+export function useResetPasswordMutation() {
   return useMutation({
-    mutationFn: async (args: { email: string; otp: string }) =>
-      verifyPasswordResetOtp(args),
+    mutationFn: async (args: { token: string; password: string }) =>
+      resetPasswordWithToken(args),
     onError: (error) => {
       toast.error(getAxiosErrorMessage(error))
     },
   })
 }
 
-export function useResetPasswordWithOtpMutation() {
-  return useMutation({
-    mutationFn: async (args: {
-      email: string
-      otp: string
-      password: string
-    }) => resetPasswordWithOtp(args),
-    onError: (error) => {
-      toast.error(getAxiosErrorMessage(error))
-    },
-  })
-}
+export const useRequestPasswordResetOtpMutation =
+  useRequestPasswordResetMutation
+export const useVerifyPasswordResetOtpMutation = useResetPasswordMutation
+export const useResetPasswordWithOtpMutation = useResetPasswordMutation

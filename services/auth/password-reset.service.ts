@@ -1,25 +1,21 @@
 import { api } from "@/services/api/axios"
 import { normalizeString } from "@/services/shared/validation.service"
 
-export type PasswordResetRequestOtpResponse = {
+export type PasswordResetRequestResponse = {
   ok: true
-  success?: boolean
-}
-
-export type PasswordResetVerifyOtpResponse = {
-  ok: true
-  valid?: boolean
+  status?: boolean
+  message?: string
 }
 
 export type PasswordResetResponse = {
   ok: true
-  success?: boolean
+  status?: boolean
 }
 
-export async function requestPasswordResetOtp(email: string) {
+export async function requestPasswordReset(email: string) {
   const resolvedEmail = normalizeString(email).toLowerCase()
 
-  const response = await api.post<PasswordResetRequestOtpResponse>(
+  const response = await api.post<PasswordResetRequestResponse>(
     "/api/auth/password-reset/request-otp",
     {
       email: resolvedEmail,
@@ -29,41 +25,28 @@ export async function requestPasswordResetOtp(email: string) {
   return response.data
 }
 
-export async function verifyPasswordResetOtp(args: {
-  email: string
-  otp: string
-}) {
-  const email = normalizeString(args.email).toLowerCase()
-  const otp = normalizeString(args.otp)
-
-  const response = await api.post<PasswordResetVerifyOtpResponse>(
-    "/api/auth/password-reset/verify-otp",
-    {
-      email,
-      otp,
-    }
-  )
-
-  return response.data
-}
-
-export async function resetPasswordWithOtp(args: {
-  email: string
-  otp: string
+export async function resetPasswordWithToken(args: {
+  token: string
   password: string
 }) {
-  const email = normalizeString(args.email).toLowerCase()
-  const otp = normalizeString(args.otp)
-  const password = normalizeString(args.password)
+  const token = normalizeString(args.token)
 
   const response = await api.post<PasswordResetResponse>(
     "/api/auth/password-reset/reset",
     {
-      email,
-      otp,
-      password,
+      token,
+      newPassword: args.password,
     }
   )
 
   return response.data
 }
+
+export const requestPasswordResetOtp = requestPasswordReset
+export async function verifyPasswordResetOtp(_: {
+  email: string
+  otp: string
+}) {
+  throw new Error("OTP verification is no longer used for password reset")
+}
+export const resetPasswordWithOtp = resetPasswordWithToken

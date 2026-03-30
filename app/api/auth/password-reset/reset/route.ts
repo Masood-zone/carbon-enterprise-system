@@ -3,30 +3,32 @@ import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { apiErrorResponse } from "@/services/shared/admin-guards"
 import { getErrorMessage } from "@/services/shared/error.service"
-import { normalizeString } from "@/services/shared/validation.service"
 
 type ResetPasswordBody = {
-  email?: string
-  otp?: string
+  token?: string
   password?: string
+  newPassword?: string
 }
 
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as ResetPasswordBody
-    const email = normalizeString(body.email).toLowerCase()
-    const otp = normalizeString(body.otp)
-    const password = normalizeString(body.password)
+    const token = typeof body.token === "string" ? body.token.trim() : ""
+    const password =
+      typeof body.newPassword === "string"
+        ? body.newPassword
+        : typeof body.password === "string"
+          ? body.password
+          : ""
 
-    if (!email || !otp || !password) {
-      return apiErrorResponse("Email, OTP, and password are required", 400)
+    if (!token || !password) {
+      return apiErrorResponse("Token and password are required", 400)
     }
 
-    const result = await auth.api.resetPasswordEmailOTP({
+    const result = await auth.api.resetPassword({
       body: {
-        email,
-        otp,
-        password,
+        token,
+        newPassword: password,
       },
     })
 
