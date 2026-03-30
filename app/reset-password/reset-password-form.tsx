@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 
@@ -16,11 +16,48 @@ type ResetPasswordFormValues = {
   confirmPassword: string
 }
 
-const requirements = [
-  { label: "Minimum 12 characters", met: true },
-  { label: "Case sensitivity (A, a)", met: true },
-  { label: "At least one symbol (!@#$%^&*)", met: false },
-]
+type PasswordRequirement = {
+  label: string
+  met: boolean
+}
+
+type PasswordStrength = {
+  label: string
+  requirements: PasswordRequirement[]
+  segments: number
+}
+
+function evaluatePasswordStrength(password: string): PasswordStrength {
+  const hasMinimumLength = password.length >= 12
+  const hasUpperCase = /[A-Z]/.test(password)
+  const hasLowerCase = /[a-z]/.test(password)
+  const hasMixedCase = hasUpperCase && hasLowerCase
+  const hasSymbol = /[!@#$%^&*]/.test(password)
+
+  const metRequirements = [hasMinimumLength, hasMixedCase, hasSymbol].filter(
+    Boolean
+  ).length
+
+  let label = "Weak"
+
+  if (metRequirements >= 3) {
+    label = "Strong"
+  } else if (metRequirements === 2) {
+    label = "Good"
+  } else if (metRequirements === 1) {
+    label = "Fair"
+  }
+
+  return {
+    label,
+    requirements: [
+      { label: "Minimum 12 characters", met: hasMinimumLength },
+      { label: "Case sensitivity (A, a)", met: hasMixedCase },
+      { label: "At least one symbol (!@#$%^&*)", met: hasSymbol },
+    ],
+    segments: metRequirements,
+  }
+}
 
 export function ResetPasswordForm() {
   const router = useRouter()
@@ -31,10 +68,16 @@ export function ResetPasswordForm() {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<ResetPasswordFormValues>()
 
   const token = searchParams.get("token")?.trim() ?? ""
+  const password = watch("password") ?? ""
+  const passwordStrength = useMemo(
+    () => evaluatePasswordStrength(password),
+    [password]
+  )
 
   useEffect(() => {
     if (!token) {
@@ -114,14 +157,22 @@ export function ResetPasswordForm() {
               <span className="text-[11px] font-bold tracking-[0.2em] text-muted-foreground uppercase">
                 Password strength
               </span>
-              <span className="text-[11px] font-bold tracking-[0.2em] text-green-700 uppercase">
-                Strong
+              <span
+                className={`text-[11px] font-bold tracking-[0.2em] uppercase ${passwordStrength.label === "Strong" ? "text-green-700" : passwordStrength.label === "Good" ? "text-emerald-700" : passwordStrength.label === "Fair" ? "text-amber-700" : "text-muted-foreground"}`}
+              >
+                {passwordStrength.label}
               </span>
             </div>
             <div className="flex h-1 gap-1">
-              <div className="flex-1 bg-green-600" />
-              <div className="flex-1 bg-green-600" />
-              <div className="flex-1 bg-green-600" />
+              <div
+                className={`flex-1 ${passwordStrength.segments >= 1 ? "bg-green-600" : "bg-border"}`}
+              />
+              <div
+                className={`flex-1 ${passwordStrength.segments >= 2 ? "bg-green-600" : "bg-border"}`}
+              />
+              <div
+                className={`flex-1 ${passwordStrength.segments >= 3 ? "bg-green-600" : "bg-border"}`}
+              />
               <div className="flex-1 bg-border" />
             </div>
           </div>
@@ -172,7 +223,7 @@ export function ResetPasswordForm() {
             Security requirements
           </p>
           <ul className="space-y-3">
-            {requirements.map((requirement) => (
+            {passwordStrength.requirements.map((requirement) => (
               <li key={requirement.label} className="flex items-start gap-3">
                 {requirement.met ? (
                   <Check

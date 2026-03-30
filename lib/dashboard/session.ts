@@ -3,7 +3,8 @@ import { redirect } from "next/navigation"
 
 import { auth } from "@/lib/auth"
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
+const fallbackSiteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
 
 export type DashboardSession = NonNullable<
   Awaited<ReturnType<(typeof auth.api)["getSession"]>>
@@ -45,8 +46,19 @@ export function getDashboardRole(session: DashboardSession): DashboardRole {
 }
 
 export async function fetchDashboardApi<T>(path: string): Promise<T> {
+  const requestHeaders = await headers()
   const cookieStore = await cookies()
-  const response = await fetch(new URL(path, siteUrl), {
+  const forwardedHost = requestHeaders.get("x-forwarded-host")
+  const host = forwardedHost ?? requestHeaders.get("host")
+  const forwardedProto = requestHeaders.get("x-forwarded-proto")
+  const protocol =
+    forwardedProto ??
+    (host?.includes("localhost") || host?.includes("127.0.0.1")
+      ? "http"
+      : "https")
+  const baseUrl = host ? `${protocol}://${host}` : fallbackSiteUrl
+
+  const response = await fetch(new URL(path, baseUrl), {
     cache: "no-store",
     headers: {
       accept: "application/json",
