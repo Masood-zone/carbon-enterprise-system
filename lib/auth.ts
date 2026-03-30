@@ -72,6 +72,10 @@ export const auth = betterAuth({
         otp: string
         type: string
       }) {
+        if (type === "forget-password") {
+          return
+        }
+
         const appName = getAppName()
         const appUrl = getAppUrl()
         const message = buildOtpEmail({
