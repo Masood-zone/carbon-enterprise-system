@@ -13,13 +13,8 @@ import {
   styleHeaderRow,
   workbookToBuffer,
 } from "@/lib/exports/excel"
-import { createPdfBuffer, drawPdfHeader, drawPdfTable } from "@/lib/exports/pdf"
 import { getExportThemeTokens } from "@/lib/exports/theme"
-import {
-  formatCompactGhanaCedi,
-  formatDashboardDate,
-  formatGhanaCedi,
-} from "@/lib/dashboard/format"
+import { formatCompactGhanaCedi } from "@/lib/dashboard/format"
 import { FinancialReportService } from "@/services/report/financial-report.service"
 import { apiErrorResponse, withManager } from "@/services/shared/admin-guards"
 
@@ -192,67 +187,6 @@ export async function GET(request: Request) {
       })
     }
 
-    const pdfBuffer = await createPdfBuffer((doc) => {
-      drawPdfHeader(doc, theme, {
-        title: "Reports Export",
-        subtitle: "Financial summary, profit & loss, cash flow",
-        generatedAt,
-      })
-
-      doc
-        .fillColor(theme.foreground)
-        .font("Helvetica-Bold")
-        .fontSize(11)
-        .text("Summary", { underline: false })
-
-      doc
-        .moveDown(0.6)
-        .font("Helvetica")
-        .fontSize(10)
-        .fillColor(theme.mutedForeground)
-
-      doc.text(`Total revenue: ${formatCompactGhanaCedi(summary.totalRevenue)}`)
-      doc.text(
-        `Total expenses: ${formatCompactGhanaCedi(summary.totalExpenses)}`
-      )
-      doc.text(`Net profit: ${formatCompactGhanaCedi(summary.netProfit)}`)
-      doc.text(`Operating margin: ${margin.toFixed(1)}%`)
-      doc.moveDown(1)
-
-      const rows = summary.trendSeries.slice(-30).map((entry) => ({
-        day: formatDashboardDate(entry.day),
-        revenue: formatGhanaCedi(entry.revenue),
-        expenses: formatGhanaCedi(entry.expenses),
-        netProfit: formatGhanaCedi(entry.netProfit),
-      }))
-
-      drawPdfTable(doc, theme, {
-        columns: [
-          { key: "day", label: "Day", width: 120 },
-          { key: "revenue", label: "Revenue", width: 120 },
-          { key: "expenses", label: "Expenses", width: 120 },
-          { key: "netProfit", label: "Net profit", width: 120 },
-        ],
-        rows,
-      })
-
-      if (summary.trendSeries.length > 30) {
-        doc
-          .moveDown(0.5)
-          .fillColor(theme.mutedForeground)
-          .fontSize(9)
-          .text(
-            `Showing last 30 days. Use CSV/XLSX exports for the full series.`
-          )
-      }
-    })
-
-    return new NextResponse(new Uint8Array(pdfBuffer), {
-      headers: {
-        "cache-control": "no-store",
-        "content-disposition": buildContentDisposition(filename),
-        "content-type": "application/pdf",
-      },
-    })
+    return apiErrorResponse("Unsupported export format", 400)
   })
 }

@@ -19,7 +19,6 @@ import {
   styleHeaderRow,
   workbookToBuffer,
 } from "@/lib/exports/excel"
-import { createPdfBuffer, drawPdfHeader, drawPdfTable } from "@/lib/exports/pdf"
 import { getExportThemeTokens } from "@/lib/exports/theme"
 import { formatDashboardDateTime } from "@/lib/dashboard/format"
 import { AnalyticsService } from "@/services/analytics/analytics.service"
@@ -128,49 +127,6 @@ export async function GET(request: Request) {
       })
     }
 
-    const pdfBuffer = await createPdfBuffer((doc) => {
-      drawPdfHeader(doc, theme, {
-        title: "Analytics Export",
-        subtitle: "Latest computed metrics",
-        generatedAt,
-      })
-
-      const rows = analytics.slice(0, 50).map((entry) => ({
-        metric: getAnalyticsMetricMeta(entry.metricKey).label,
-        value: formatAnalyticsMetricValue(entry.metricKey, entry.value),
-        granularity: getAnalyticsPeriodLabel(entry.granularity),
-        period: formatAnalyticsPeriodRange(entry.periodStart, entry.periodEnd),
-        calculated: formatDashboardDateTime(entry.calculatedAt),
-      }))
-
-      drawPdfTable(doc, theme, {
-        columns: [
-          { key: "metric", label: "Metric", width: 180 },
-          { key: "value", label: "Value", width: 90 },
-          { key: "granularity", label: "Period", width: 70 },
-          { key: "period", label: "Range", width: 150 },
-          { key: "calculated", label: "Calculated", width: 120 },
-        ],
-        rows,
-      })
-
-      if (analytics.length > 50) {
-        doc
-          .moveDown(0.5)
-          .fillColor(theme.mutedForeground)
-          .fontSize(9)
-          .text(
-            `Showing 50 of ${analytics.length} cached records. Use CSV/XLSX exports for the full dataset.`
-          )
-      }
-    })
-
-    return new NextResponse(new Uint8Array(pdfBuffer), {
-      headers: {
-        "cache-control": "no-store",
-        "content-disposition": buildContentDisposition(filename),
-        "content-type": "application/pdf",
-      },
-    })
+    return apiErrorResponse("Unsupported export format", 400)
   })
 }

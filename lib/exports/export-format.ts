@@ -1,9 +1,8 @@
-export type ExportFormat = "pdf" | "xlsx" | "csv"
+export type ExportFormat = "xlsx" | "csv"
 
 export function parseExportFormat(value: string | null): ExportFormat | null {
   if (!value) return null
   const normalized = value.toLowerCase()
-  if (normalized === "pdf") return "pdf"
   if (normalized === "xlsx") return "xlsx"
   if (normalized === "csv") return "csv"
   return null

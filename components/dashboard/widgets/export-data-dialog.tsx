@@ -16,7 +16,7 @@ import {
 import { Spinner } from "@/components/ui/spinner"
 import { MaterialSymbol } from "@/components/common/MaterialSymbol"
 
-type ExportFormat = "pdf" | "xlsx" | "csv"
+type ExportFormat = "xlsx" | "csv"
 
 type ExportOption = {
   format: ExportFormat
@@ -26,12 +26,6 @@ type ExportOption = {
 }
 
 const exportOptions: ExportOption[] = [
-  {
-    format: "pdf",
-    icon: "picture_as_pdf",
-    title: "PDF Report",
-    description: "Best for presentations and offline viewing. Includes tables.",
-  },
   {
     format: "xlsx",
     icon: "grid_on",
@@ -62,7 +56,7 @@ export function ExportDataDialog(props: {
   } = props
 
   const [open, setOpen] = useState(false)
-  const [format, setFormat] = useState<ExportFormat>("pdf")
+  const [format, setFormat] = useState<ExportFormat>("xlsx")
   const [isGenerating, setIsGenerating] = useState(false)
 
   const selectedOption = useMemo(
