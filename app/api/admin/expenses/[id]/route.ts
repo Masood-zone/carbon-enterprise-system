@@ -8,6 +8,22 @@ import {
   normalizeOptionalString,
 } from "@/services/shared/validation.service"
 
+export async function GET(
+  request: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  return withManager(request, async ({ businessId }) => {
+    const { id } = await context.params
+    const expense = await ExpenseService.getById(businessId, id)
+
+    if (!expense) {
+      return apiErrorResponse("Expense not found", 404)
+    }
+
+    return NextResponse.json({ ok: true, expense })
+  })
+}
+
 export async function PATCH(
   request: Request,
   context: { params: Promise<{ id: string }> }

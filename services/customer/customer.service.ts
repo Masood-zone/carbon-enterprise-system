@@ -83,8 +83,11 @@ export class CustomerService {
   }
 
   static async delete(businessId: string, customerId: string) {
-    return prisma.customer.deleteMany({
+    return prisma.customer.updateMany({
       where: { id: customerId, businessId },
+      data: {
+        isActive: false,
+      },
     })
   }
 

@@ -1,4 +1,5 @@
 import { ActivityFeed } from "@/components/dashboard/widgets/activity-feed"
+import { ExportDataDialog } from "@/components/dashboard/widgets/export-data-dialog"
 import { RevenueChart } from "@/components/dashboard/widgets/revenue-chart"
 import { StatsCard } from "@/components/dashboard/widgets/stats-card"
 import {
@@ -67,16 +68,27 @@ export default async function ReportsPage() {
   return (
     <div className="space-y-6">
       <section className="border border-border bg-card p-6 text-card-foreground">
-        <p className="text-[11px] font-semibold tracking-[0.28em] text-muted-foreground uppercase">
-          Financial reporting
-        </p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">
-          Reports.
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-          Profit, loss, and cash flow data come from the reporting routes and
-          are presented as a read-only finance overview.
-        </p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="text-[11px] font-semibold tracking-[0.28em] text-muted-foreground uppercase">
+              Financial reporting
+            </p>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">
+              Reports.
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+              Profit, loss, and cash flow data come from the reporting routes
+              and are presented as a read-only finance overview.
+            </p>
+          </div>
+
+          <ExportDataDialog
+            datasetLabel="Reports"
+            description="Select your preferred format for the Reports dataset."
+            exportPath="/api/admin/reports/export"
+            triggerLabel="Export data"
+          />
+        </div>
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

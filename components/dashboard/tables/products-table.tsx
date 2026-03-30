@@ -30,7 +30,7 @@ export function ProductsTable({
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[900px] text-left text-sm">
+        <table className="w-full min-w-225 text-left text-sm">
           <thead className="border-b border-border bg-muted text-[11px] tracking-[0.22em] text-muted-foreground uppercase">
             <tr>
               <th className="px-4 py-3">Product</th>

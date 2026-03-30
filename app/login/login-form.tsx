@@ -59,7 +59,6 @@ export function LoginForm() {
           placeholder="name@company.com"
           type="email"
           autoComplete="email"
-          aria-invalid={errors.email ? "true" : "false"}
           {...register("email", {
             required: "Email is required",
           })}
@@ -87,7 +86,6 @@ export function LoginForm() {
             placeholder="••••••••"
             type={showPassword ? "text" : "password"}
             autoComplete="current-password"
-            aria-invalid={errors.password ? "true" : "false"}
             {...register("password", {
               required: "Password is required",
               minLength: {

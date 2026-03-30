@@ -138,8 +138,11 @@ export class ProductService {
   }
 
   static async delete(businessId: string, productId: string) {
-    return prisma.product.deleteMany({
+    return prisma.product.updateMany({
       where: { id: productId, businessId },
+      data: {
+        isActive: false,
+      },
     })
   }
 }

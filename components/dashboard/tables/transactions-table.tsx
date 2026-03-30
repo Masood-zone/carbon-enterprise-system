@@ -30,7 +30,7 @@ export function TransactionsTable({
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[980px] text-left text-sm">
+        <table className="w-full min-w-245 text-left text-sm">
           <thead className="border-b border-border bg-muted text-[11px] tracking-[0.22em] text-muted-foreground uppercase">
             <tr>
               <th className="px-4 py-3">Date</th>

@@ -5,6 +5,13 @@ import { api, getAxiosErrorMessage } from "@/services/api/axios"
 
 import type { ProductInput, ProductUpdateInput } from "./product.service"
 
+export type InventoryMovementInput = {
+  movementType: string
+  notes?: string
+  productId: string
+  quantity: number
+}
+
 const productQueryKeys = {
   all: ["admin", "products"] as const,
   detail: (id: string) => ["admin", "products", id] as const,
@@ -60,6 +67,34 @@ export function useAdminInventoryMovementsQuery() {
     queryFn: async () => {
       const response = await api.get("/api/admin/inventory/movements")
       return response.data
+    },
+  })
+}
+
+export function useCreateInventoryMovementMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (input: InventoryMovementInput) => {
+      const response = await api.post("/api/admin/inventory/movements", input)
+      return response.data
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: productQueryKeys.inventory,
+      })
+      await queryClient.invalidateQueries({
+        queryKey: productQueryKeys.lowStock,
+      })
+      await queryClient.invalidateQueries({
+        queryKey: productQueryKeys.movements,
+      })
+      await queryClient.invalidateQueries({
+        queryKey: productQueryKeys.all,
+      })
+    },
+    onError: (error) => {
+      toast.error(getAxiosErrorMessage(error))
     },
   })
 }

@@ -1,8 +1,13 @@
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
 
-import { api } from "@/services/api/axios"
+import { api, getAxiosErrorMessage } from "@/services/api/axios"
 
-import type { TransactionFilters } from "./transaction.service"
+import type {
+  CreateTransactionInput,
+  TransactionFilters,
+  UpdateTransactionInput,
+} from "./transaction.service"
 
 const transactionQueryKeys = {
   all: ["admin", "transactions"] as const,
@@ -55,5 +60,76 @@ export function useAdminTransactionItemsQuery(transactionId: string) {
       return response.data
     },
     enabled: Boolean(transactionId),
+  })
+}
+
+export function useCreateAdminTransactionMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (input: CreateTransactionInput) => {
+      const response = await api.post("/api/admin/transactions", input)
+      return response.data
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: transactionQueryKeys.all,
+      })
+      await queryClient.invalidateQueries({ queryKey: ["admin", "inventory"] })
+      await queryClient.invalidateQueries({ queryKey: ["admin", "products"] })
+    },
+    onError: (error) => {
+      toast.error(getAxiosErrorMessage(error))
+    },
+  })
+}
+
+export function useUpdateAdminTransactionMutation(transactionId: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (input: UpdateTransactionInput) => {
+      const response = await api.patch(
+        `/api/admin/transactions/${transactionId}`,
+        input
+      )
+      return response.data
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: transactionQueryKeys.all,
+      })
+      await queryClient.invalidateQueries({
+        queryKey: transactionQueryKeys.detail(transactionId),
+      })
+      await queryClient.invalidateQueries({ queryKey: ["admin", "inventory"] })
+      await queryClient.invalidateQueries({ queryKey: ["admin", "products"] })
+    },
+    onError: (error) => {
+      toast.error(getAxiosErrorMessage(error))
+    },
+  })
+}
+
+export function useVoidAdminTransactionMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (transactionId: string) => {
+      const response = await api.delete(
+        `/api/admin/transactions/${transactionId}`
+      )
+      return response.data
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: transactionQueryKeys.all,
+      })
+      await queryClient.invalidateQueries({ queryKey: ["admin", "inventory"] })
+      await queryClient.invalidateQueries({ queryKey: ["admin", "products"] })
+    },
+    onError: (error) => {
+      toast.error(getAxiosErrorMessage(error))
+    },
   })
 }

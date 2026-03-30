@@ -1,5 +1,12 @@
 import { prisma } from "@/lib/prisma"
 
+export type InventoryMovementInput = {
+  productId: string
+  movementType: string
+  notes?: string
+  quantity: number
+}
+
 export class InventoryService {
   static async listInventory(businessId: string) {
     return prisma.product.findMany({
@@ -60,6 +67,59 @@ export class InventoryService {
         transactionItem: true,
         purchaseOrderItem: true,
       },
+    })
+  }
+
+  static async recordMovement(
+    businessId: string,
+    performedByUserId: string,
+    input: InventoryMovementInput
+  ) {
+    return prisma.$transaction(async (tx) => {
+      const product = await tx.product.findFirst({
+        where: { id: input.productId, businessId },
+        select: { id: true, stock: true },
+      })
+
+      if (!product) {
+        throw new Error("Product not found")
+      }
+
+      const balanceBefore = product.stock
+      const quantity = Number(input.quantity)
+
+      if (!Number.isFinite(quantity) || quantity === 0) {
+        throw new Error("Quantity must be a non-zero number")
+      }
+
+      const updatedProduct = await tx.product.update({
+        where: { id: product.id },
+        data: {
+          stock: {
+            increment: quantity,
+          },
+        },
+        select: { stock: true },
+      })
+
+      const movement = await tx.stockMovement.create({
+        data: {
+          businessId,
+          productId: product.id,
+          performedByUserId,
+          movementType: input.movementType as never,
+          quantity,
+          balanceBefore,
+          balanceAfter: updatedProduct.stock,
+          notes: input.notes,
+        },
+        include: {
+          product: true,
+          performedBy: true,
+        },
+      })
+
+      return movement
     })
   }
 }

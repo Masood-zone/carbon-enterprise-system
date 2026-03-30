@@ -1,4 +1,5 @@
 import { ActivityFeed } from "@/components/dashboard/widgets/activity-feed"
+import { ExportDataDialog } from "@/components/dashboard/widgets/export-data-dialog"
 import { StatsCard } from "@/components/dashboard/widgets/stats-card"
 import {
   formatAnalyticsMetricValue,
@@ -51,17 +52,28 @@ export default async function AnalyticsPage() {
   return (
     <div className="space-y-6">
       <section className="border border-border bg-card p-6 text-card-foreground">
-        <p className="text-[11px] font-semibold tracking-[0.28em] text-muted-foreground uppercase">
-          Analytics
-        </p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">
-          Analytics overview.
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-          Business-friendly summaries of sales, profit, stock movement, and
-          demand are loaded from the admin analytics route so administrators can
-          review the latest computed periods at a glance.
-        </p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="text-[11px] font-semibold tracking-[0.28em] text-muted-foreground uppercase">
+              Analytics
+            </p>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">
+              Analytics overview.
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+              Business-friendly summaries of sales, profit, stock movement, and
+              demand are loaded from the admin analytics route so administrators
+              can review the latest computed periods at a glance.
+            </p>
+          </div>
+
+          <ExportDataDialog
+            datasetLabel="Analytics"
+            description="Select your preferred format for the Analytics dataset."
+            exportPath="/api/admin/analytics/export"
+            triggerLabel="Export data"
+          />
+        </div>
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
