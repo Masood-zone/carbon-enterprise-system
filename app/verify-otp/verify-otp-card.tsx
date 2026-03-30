@@ -8,10 +8,14 @@ import { toast } from "sonner"
 import { ArrowLeft, ArrowRight } from "lucide-react"
 
 import { getAxiosErrorMessage } from "@/services/api/axios"
-import { verifyPasswordResetOtp } from "@/services/auth/password-reset.service"
+import {
+  requestPasswordResetOtp,
+  verifyPasswordResetOtp,
+} from "@/services/auth/password-reset.service"
 
 const STORAGE_EMAIL_KEY = "carbon.passwordReset.email"
 const STORAGE_OTP_KEY = "carbon.passwordReset.otp"
+const RESEND_COOLDOWN_SECONDS = 24
 
 function maskEmail(email: string) {
   const trimmed = email.trim()
@@ -30,6 +34,10 @@ export function VerifyOtpCard() {
     Array.from({ length: 6 }, () => "")
   )
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isResending, setIsResending] = useState(false)
+  const [cooldownSeconds, setCooldownSeconds] = useState(
+    RESEND_COOLDOWN_SECONDS
+  )
   const inputRefs = useRef<Array<HTMLInputElement | null>>([])
 
   useEffect(() => {
@@ -43,7 +51,25 @@ export function VerifyOtpCard() {
     setEmail(storedEmail)
   }, [router])
 
+  useEffect(() => {
+    if (cooldownSeconds <= 0) {
+      return undefined
+    }
+
+    const timer = window.setInterval(() => {
+      setCooldownSeconds((current) => Math.max(current - 1, 0))
+    }, 1000)
+
+    return () => window.clearInterval(timer)
+  }, [cooldownSeconds])
+
   const masked = useMemo(() => (email ? maskEmail(email) : ""), [email])
+
+  const formatCooldown = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+    return `${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`
+  }
 
   const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -66,6 +92,26 @@ export function VerifyOtpCard() {
       toast.error(getAxiosErrorMessage(error))
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handleResendOtp = async () => {
+    if (!email || cooldownSeconds > 0) {
+      return
+    }
+
+    try {
+      setIsResending(true)
+      await requestPasswordResetOtp(email)
+
+      setDigits(Array.from({ length: 6 }, () => ""))
+      inputRefs.current[0]?.focus()
+      setCooldownSeconds(RESEND_COOLDOWN_SECONDS)
+      toast.success("A new verification code has been sent.")
+    } catch (error) {
+      toast.error(getAxiosErrorMessage(error))
+    } finally {
+      setIsResending(false)
     }
   }
 
@@ -176,14 +222,15 @@ export function VerifyOtpCard() {
             </span>
             <div className="flex items-center gap-3">
               <span className="bg-muted px-2 py-0.5 font-mono text-xs text-muted-foreground">
-                00:24
+                {formatCooldown(cooldownSeconds)}
               </span>
               <button
                 className="text-sm font-semibold text-primary transition-colors hover:underline disabled:cursor-not-allowed disabled:text-muted-foreground"
-                disabled
+                disabled={Boolean(isResending || cooldownSeconds > 0 || !email)}
                 type="button"
+                onClick={handleResendOtp}
               >
-                Resend
+                {isResending ? "Sending..." : "Resend"}
               </button>
             </div>
           </div>
